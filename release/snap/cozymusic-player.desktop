@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=CozyMusic
+Comment=Персональные рекомендации, подборки на любой случай и музыкальные новинки
+Exec=cozymusic-player %U
+Terminal=false
+Type=Application
+Icon=cozymusic-player
+MimeType=x-scheme-handler/yandexmusic;
+Categories=Audio;AudioVideo;

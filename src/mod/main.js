@@ -298,7 +298,7 @@ electron.ipcMain.handle("yandexMusicMod.axios", async (_ev, config) => {
 
 // window API - принудительное закрытие приложения
 electron.ipcMain.handle("yandexMusicMod.forceQuit", async () => {
-  console.log("[Cozymusic] force quit requested");
+  console.log("[CozyMusic] force quit requested");
   try {
     electron.app.quit();
   } catch (e) {}

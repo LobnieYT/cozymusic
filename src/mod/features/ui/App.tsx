@@ -155,7 +155,7 @@ export default function App() {
           }}
         ></div>
         <span className="trigger-text hidden bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text font-bold text-transparent lg:inline">
-          Cozymusic
+          CozyMusic
         </span>
         <Toaster position="bottom-right" />
       </SheetTrigger>
@@ -199,7 +199,7 @@ export default function App() {
                 />
                 <div className="flex flex-col leading-tight">
                   <span className="bg-gradient-to-r from-violet-100 via-fuchsia-200 to-violet-100 bg-clip-text text-lg font-black tracking-wider text-transparent drop-shadow-[0_0_12px_rgba(217,70,239,0.35)]">
-                    Cozymusic
+                    CozyMusic
                   </span>
                   <span className="mt-0.5 flex items-center gap-1.5">
                     <span className="rounded-full border border-fuchsia-300/40 bg-fuchsia-400/15 px-2 py-px text-[10px] font-bold text-fuchsia-100">
