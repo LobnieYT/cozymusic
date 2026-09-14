@@ -1,5 +1,4 @@
 import { ThemeProvider } from "./contexts/ThemeContext";
-import { useQuery } from "@tanstack/react-query";
 
 import { Sheet, SheetContent, SheetDescription, SheetTitle, SheetTrigger } from "@ui/components/ui/sheet";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/ui/tooltip";
@@ -17,38 +16,80 @@ import { AutoBestQuality } from "@ui/components/auto-best-quality";
 import { DiscordRPC } from "@ui/components/discord-rpc";
 import { Settings } from "@ui/components/settings";
 import { AutoLiker } from "@ui/components/auto-liker";
+import { ExperimentsToggle } from "@ui/components/experiments-toggle";
+import { ScaleChanger } from "@ui/components/scale-changer";
+import { LyricsSource } from "@ui/components/lyrics-source";
+import { CustomThemes } from "@ui/components/custom-themes";
+import { NewYearSnowfall, NewYearSnowfallAnimation } from "@ui/components/snowfall-animation";
 
 import { Button } from "./components/ui/button";
+import { ExpandedByDefaultContext } from "./components/ui/expandable-card";
 
-import logo from "@ui/assets/logo.png?inline";
+import logo from "@ui/assets/cozy-logo.png?inline";
 import discordBg from "@ui/assets/discord-bg.png?inline";
 
 import { FaDiscord, FaGithub } from "react-icons/fa";
-import { RxUpdate } from "react-icons/rx";
+import { Power, Download, Volume2, Heart, MicVocal, Palette, Type, Scaling, Snowflake, Gamepad2, Settings as SettingsIcon, Wrench, FlaskConical } from "lucide-react";
 
 const IS_DEV = false;
-const DISCORD_INVITE_URL = "https://discord.gg/4nK7nk2sY8";
-const GITHUB_REPO_URL = "https://github.com/Stephanzion/YandexMusicBetaMod/";
+const DISCORD_INVITE_URL = "https://discord.gg/mS5WJfWEht";
+const GITHUB_REPO_URL = "https://github.com/LobnieYT/cozymusic";
+
+type MenuKey =
+  | "downloader"
+  | "quality"
+  | "liker"
+  | "lyrics"
+  | "themes"
+  | "fonts"
+  | "scale"
+  | "snow"
+  | "discord"
+  | "settings"
+  | "devtools"
+  | "experiments";
+
+function MenuSection({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-1">
+      <span className="px-2 pt-1 text-[10px] font-bold tracking-[0.18em] text-violet-200/70 uppercase">{title}</span>
+      <div className="flex flex-col gap-1">{children}</div>
+    </div>
+  );
+}
+
+function NavButton({
+  active,
+  icon,
+  label,
+  onClick,
+}: {
+  active: boolean;
+  icon: React.ReactNode;
+  label: string;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      onClick={onClick}
+      className={
+        "flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 py-1.5 text-left text-[13px] font-medium transition-all " +
+        (active
+          ? "bg-gradient-to-r from-violet-500/40 to-fuchsia-500/25 text-white shadow-sm"
+          : "text-muted-foreground hover:bg-white/5 hover:text-white")
+      }
+    >
+      <span className="shrink-0 [&>svg]:h-4 [&>svg]:w-4">{icon}</span>
+      <span className="truncate">{label}</span>
+    </button>
+  );
+}
 
 export default function App() {
   const [mountNode, setMountNode] = useState<HTMLDivElement | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(IS_DEV);
   const [devtoolsEnabled, setDevtoolsEnabled] = useState(false);
-
-  const appMetaQuery = useQuery({
-    queryKey: ["appMeta"],
-    queryFn: async () => {
-      const data = await fetch(
-        "https://raw.githubusercontent.com/Stephanzion/YandexMusicBetaMod/refs/heads/master/.meta/meta.json",
-      );
-      if (data.status !== 200) {
-        throw new Error("Failed to fetch app meta");
-      }
-      return data.json();
-    },
-    enabled: true,
-    retry: true,
-  });
+  const [selected, setSelected] = useState<MenuKey>("downloader");
 
   useEffect(() => {
     (async () => {
@@ -105,22 +146,29 @@ export default function App() {
   }, []);
 
   const sheetTrigger = (
-    <SheetTrigger className="flex w-full items-center justify-center gap-2.5 rounded-full border-2 border-[var(--ym-outline-color-primary-disabled)] p-[5px] text-[var(--ym-controls-color-primary-text-enabled_variant)] transition-colors duration-100 ease-in-out hover:bg-[var(--ym-surface-color-primary-enabled-list)] px-6">
-      <div
-        className="h-[25px] w-[25px] bg-contain bg-no-repeat"
-        style={{
-          backgroundImage: `url(${logo})`,
-        }}
-      ></div>
-      <span className="trigger-text hidden lg:inline">Меню мода</span>
-    </SheetTrigger>
+    <>
+      <SheetTrigger className="flex w-full items-center justify-center gap-2.5 rounded-full border-2 border-violet-400/60 bg-gradient-to-r from-violet-500/15 via-fuchsia-500/10 to-violet-500/15 p-[5px] px-6 text-[var(--ym-controls-color-primary-text-enabled_variant)] transition-all duration-150 ease-in-out hover:border-violet-400 hover:from-violet-500/25 hover:to-fuchsia-500/20">
+        <div
+          className="h-[25px] w-[25px] bg-contain bg-no-repeat"
+          style={{
+            backgroundImage: `url(${logo})`,
+          }}
+        ></div>
+        <span className="trigger-text hidden bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text font-bold text-transparent lg:inline">
+          Cozymusic
+        </span>
+        <Toaster position="bottom-right" />
+      </SheetTrigger>
+
+      <NewYearSnowfallAnimation />
+    </>
   );
 
   return (
     <ThemeProvider>
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         {mountNode && createPortal(sheetTrigger, mountNode)}
-        <SheetContent side="left" className="w-full" onOpenAutoFocus={(e) => e.preventDefault()}>
+        <SheetContent side="center" className="w-full" onOpenAutoFocus={(e) => e.preventDefault()}>
           <div
             id="header"
             className="flex items-center justify-between px-4"
@@ -130,104 +178,164 @@ export default function App() {
             }}
           ></div>
 
-          <div className="bg-secondary/20 m-3 mb-0 flex justify-between rounded-md border px-4 py-2 shadow-sm">
-            <div className="flex items-center gap-2">
-              <div
-                className="h-6 w-6 bg-contain bg-no-repeat"
-                style={{
-                  backgroundImage: `url(${logo})`,
-                }}
-              />
-              <span className="text-foreground text-base font-semibold">Yandex Music Mod</span>
-              <span className="text-muted-foreground text-sm font-semibold">v{import.meta.env.VITE_MOD_VERSION}</span>
-            </div>
+          <div className="relative m-3 mb-0 overflow-hidden rounded-xl border border-violet-400/30 bg-gradient-to-br from-violet-600/30 via-fuchsia-600/15 to-indigo-600/25 px-4 py-3 shadow-sm">
+            <div
+              className="pointer-events-none absolute inset-0 opacity-40"
+              style={{
+                backgroundImage: `url(${logo})`,
+                backgroundSize: "110px",
+                backgroundPosition: "right -20px center",
+                backgroundRepeat: "no-repeat",
+                maskImage: "linear-gradient(to left, black, transparent 70%)",
+                WebkitMaskImage: "linear-gradient(to left, black, transparent 70%)",
+              }}
+            />
+            <div className="relative flex items-center justify-between">
+              <div className="flex items-center gap-2.5">
+                <div
+                  className="h-9 w-9 rounded-xl bg-white/10 bg-contain bg-no-repeat p-1 shadow-inner backdrop-blur"
+                  style={{
+                    backgroundImage: `url(${logo})`,
+                    backgroundOrigin: "content-box",
+                  }}
+                />
+                <div className="flex flex-col leading-tight">
+                  <span className="bg-gradient-to-r from-violet-200 via-fuchsia-200 to-violet-200 bg-clip-text text-lg font-black tracking-wide text-transparent">
+                    Cozymusic
+                  </span>
+                  <span className="text-muted-foreground text-[11px] font-semibold">
+                    v{import.meta.env.VITE_MOD_VERSION} • мод для Яндекс Музыки
+                  </span>
+                </div>
+              </div>
 
-            <div className="flex items-center gap-2">
-              <Tooltip>
-                <TooltipTrigger>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => window.open(DISCORD_INVITE_URL, "_blank", "noreferrer")}
-                  >
-                    <FaDiscord className="text-blue-500 h-[1.3rem]! w-[1.3rem]!" fill="currentColor" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Discord сервер</p>
-                </TooltipContent>
-              </Tooltip>
+              <div className="flex items-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="border-white/15 bg-white/5 backdrop-blur hover:bg-white/15"
+                      onClick={() => window.open(DISCORD_INVITE_URL, "_blank", "noreferrer")}
+                    >
+                      <FaDiscord className="h-[1.3rem]! w-[1.3rem]! text-[#8b9cf5]" fill="currentColor" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Discord сервер</p>
+                  </TooltipContent>
+                </Tooltip>
 
-              <Tooltip>
-                <TooltipTrigger>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => window.open(GITHUB_REPO_URL, "_blank", "noreferrer")}
-                  >
-                    <FaGithub className="text-foreground h-[1.3rem]! w-[1.3rem]!" fill="currentColor" />
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent side="bottom">
-                  <p>Исходный код на Github</p>
-                </TooltipContent>
-              </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="border-white/15 bg-white/5 backdrop-blur hover:bg-white/15"
+                      onClick={() => window.open(GITHUB_REPO_URL, "_blank", "noreferrer")}
+                    >
+                      <FaGithub className="text-foreground h-[1.3rem]! w-[1.3rem]!" fill="currentColor" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Исходный код на Github</p>
+                  </TooltipContent>
+                </Tooltip>
+              </div>
             </div>
           </div>
 
-          <ScrollArea className="flex h-full flex-col gap-4 overflow-hidden overflow-x-auto overflow-y-auto rounded-md">
-            {devtoolsEnabled && <IPChecker />}
+          <div className="flex min-h-0 flex-1 gap-2 px-3">
+            <div className="flex w-[148px] shrink-0 flex-col gap-2 overflow-y-auto py-1 pr-1">
+              <MenuSection title="Музыка">
+                <NavButton active={selected === "downloader"} icon={<Download />} label="Скачать треки" onClick={() => setSelected("downloader")} />
+                <NavButton active={selected === "quality"} icon={<Volume2 />} label="Качество" onClick={() => setSelected("quality")} />
+                <NavButton active={selected === "liker"} icon={<Heart />} label="Лайки" onClick={() => setSelected("liker")} />
+                <NavButton active={selected === "lyrics"} icon={<MicVocal />} label="Тексты песен" onClick={() => setSelected("lyrics")} />
+              </MenuSection>
 
-            {appMetaQuery.isSuccess &&
-              appMetaQuery.data &&
-              appMetaQuery.data.modStable !== import.meta.env.VITE_MOD_VERSION && (
-                <div
-                  className="m-4 py-4 px-5 flex flex-row justify-center items-center gap-3 bg-secondary border-border rounded-xl hover:scale-105 transition-all cursor-pointer"
-                  onClick={() => window.open(appMetaQuery.data.downloadUrl, "_blank", "noreferrer")}
-                >
-                  <RxUpdate className="text-foreground h-[2.5rem]! w-[2.5rem]!" fill="currentColor" />
-                  <div className="flex flex-col gap-1 justify-center items-start">
-                    <span className="text-foreground text-base font-semibold">
-                      Доступно обновление v{appMetaQuery.data.modStable}
-                    </span>
-                    <span className="text-muted-foreground text-sm">Нажмите, чтобы скачать новую версию мода</span>
+              <MenuSection title="Внешний вид">
+                <NavButton active={selected === "themes"} icon={<Palette />} label="Темы" onClick={() => setSelected("themes")} />
+                <NavButton active={selected === "fonts"} icon={<Type />} label="Шрифты" onClick={() => setSelected("fonts")} />
+                <NavButton active={selected === "scale"} icon={<Scaling />} label="Масштаб" onClick={() => setSelected("scale")} />
+                <NavButton active={selected === "snow"} icon={<Snowflake />} label="Снег" onClick={() => setSelected("snow")} />
+              </MenuSection>
+
+              <MenuSection title="Интеграции">
+                <NavButton active={selected === "discord"} icon={<Gamepad2 />} label="Discord" onClick={() => setSelected("discord")} />
+              </MenuSection>
+
+              <MenuSection title="Система">
+                <NavButton active={selected === "settings"} icon={<SettingsIcon />} label="Настройки" onClick={() => setSelected("settings")} />
+                <NavButton active={selected === "devtools"} icon={<Wrench />} label="Devtools" onClick={() => setSelected("devtools")} />
+                {devtoolsEnabled && (
+                  <NavButton active={selected === "experiments"} icon={<FlaskConical />} label="Эксперименты" onClick={() => setSelected("experiments")} />
+                )}
+              </MenuSection>
+            </div>
+
+            <div className="bg-secondary/20 min-h-0 flex-1 overflow-hidden rounded-xl border">
+              <ScrollArea
+                className="flex h-full flex-col overflow-hidden overflow-x-auto overflow-y-auto rounded-xl"
+                viewportClassName="gap-2 p-2"
+              >
+                <ExpandedByDefaultContext.Provider value={true}>
+                {/* Проверка IP адреса на геолокацию, отключил за ненадобностью */}
+                {/* {devtoolsEnabled && <IPChecker />} */}
+
+                {selected === "downloader" && <Downloader />}
+                {selected === "quality" && <AutoBestQuality />}
+                {selected === "liker" && <AutoLiker />}
+                {selected === "lyrics" && <LyricsSource />}
+
+                {selected === "themes" && <CustomThemes />}
+                {selected === "fonts" && <FontChanger />}
+                {selected === "scale" && <ScaleChanger />}
+                {selected === "snow" && <NewYearSnowfall />}
+
+                {selected === "discord" && <DiscordRPC />}
+
+                {selected === "settings" && <Settings />}
+                {selected === "devtools" && <Devtools />}
+                {selected === "experiments" && devtoolsEnabled && <ExperimentsToggle />}
+                {/* {devtoolsEnabled && <Playground />} */}
+                </ExpandedByDefaultContext.Provider>
+
+                <div className="flex flex-col gap-4 justify-center items-center m-2 ">
+                  <div
+                    className="py-3 px-2 w-full flex flex-row justify-center items-center gap-4 border-violet-400 border-1 rounded-xl hover:scale-105 transition-all cursor-pointer opacity-90 dark:opacity-100"
+                    style={{
+                      backgroundImage: `url(${discordBg})`,
+                      backgroundSize: "contain",
+                      backgroundRepeat: "repeat-x",
+                      zoom: ".9",
+                    }}
+                    onClick={() => window.open(DISCORD_INVITE_URL, "_blank", "noreferrer")}
+                  >
+                    <FaDiscord className="text-white h-[2.5rem]! w-[2.5rem]!" fill="currentColor" />
+                    <div className="flex flex-col gap-1 justify-center items-start">
+                      <span className="text-white text-lg font-semibold">Cozy Lounge</span>
+                      <span className="text-slate-200 text-sm mt-[-3px]">Наше Дискорд сообщество</span>
+                    </div>
                   </div>
                 </div>
-              )}
-
-            <Downloader />
-            <DiscordRPC />
-            <AutoLiker />
-            <AutoBestQuality />
-            <FontChanger />
-            <Settings />
-            <Devtools />
-
-            {devtoolsEnabled && <Playground />}
-
-            <div
-              className="m-4 py-3 flex flex-row justify-center items-center gap-4 border-violet-400 border-1 rounded-xl hover:scale-105 transition-all cursor-pointer opacity-75 dark:opacity-100"
-              style={{ backgroundImage: `url(${discordBg})`, backgroundSize: "cover" }}
-              onClick={() => window.open(DISCORD_INVITE_URL, "_blank", "noreferrer")}
-            >
-              <FaDiscord className="text-white h-[2.5rem]! w-[2.5rem]!" fill="currentColor" />
-              <div className="flex flex-col gap-1 justify-center items-start">
-                <span className="text-white text-lg font-semibold">Yandex Music Mod</span>
-                <span className="text-slate-200 text-sm mt-[-3px]">Присоединяйтесь к нам в Discord</span>
-              </div>
+              </ScrollArea>
             </div>
-          </ScrollArea>
+          </div>
 
-          <div className="m-4 flex flex-row">
-            <Button variant="default" className="flex-1 opacity-0" onClick={() => setIsSheetOpen(false)}>
-              Сохранить
+          <div className="m-4 flex flex-row gap-2">
+            <Button
+              variant="destructive"
+              className="flex-1 cursor-pointer"
+              onClick={() => window.yandexMusicMod.forceQuit()}
+            >
+              <Power className="h-4 w-4" />
+              Закрыть принудительно
             </Button>
             <Button variant="outline" className="text-foreground flex-1" onClick={() => setIsSheetOpen(false)}>
               Назад
             </Button>
           </div>
-
-          <Toaster position="bottom-right" />
         </SheetContent>
       </Sheet>
     </ThemeProvider>

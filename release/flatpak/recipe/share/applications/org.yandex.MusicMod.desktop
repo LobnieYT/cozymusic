@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=Cozymusic
+Comment=Персональные рекомендации, подборки на любой случай и музыкальные новинки
+Exec=yandex-music-mod %U
+Terminal=false
+Type=Application
+Icon=org.yandex.MusicMod
+StartupWMClass=YandexMusicMod
+MimeType=x-scheme-handler/yandexmusic;
+Categories=Audio;AudioVideo;

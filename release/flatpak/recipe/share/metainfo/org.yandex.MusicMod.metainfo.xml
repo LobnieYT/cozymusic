@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>org.yandex.MusicMod</id>
+  <metadata_license>CC0-1.0</metadata_license>
+  <name>Cozymusic</name>
+  <summary>Мод десктопного клиента Яндекс Музыки</summary>
+  <description>
+    <p>Мод десктопного клиента Яндекс Музыки (база 5.119.0, самообновления заблокированы):
+    работа без Плюса, Discord-RPC, скачивание треков, кастомные шрифты.</p>
+  </description>
+  <launchable type="desktop-id">org.yandex.MusicMod.desktop</launchable>
+  <provides>
+    <id>org.yandex.MusicMod.desktop</id>
+  </provides>
+</component>

@@ -1,5 +1,9 @@
 import { onYandexApiResponse, onYandexApiRequest } from "~/mod/features/utils/utils";
-import { getTrackUrl, getTracksInfo, QualityEnum } from "~/mod/features/utils/downloader";
+import { getTrackUrl, getTracksInfo, QualityEnum } from "~/mod/features/utils/api";
+import { musixmatchApi } from "@ui/external-apis/musixmatch";
+import { type Lyrics, type Subtitle } from "@ui/external-apis/musixmatch/models";
+import { toast } from "sonner";
+import { getLyricsSource } from "~/mod/features/lyrics/lyrics";
 
 // Заменить hasPlus на true, когда яндекс получает информацию о текущем пользователе
 onYandexApiResponse("api.music.yandex.net/account/about", async function (response: any) {
@@ -95,6 +99,51 @@ onYandexApiResponse("api.music.yandex.net", async (response: any) => {
   return source;
 });
 
+// Убрать блоки донатов артистам
+onYandexApiResponse("/donation", async function (response: any) {
+  console.log(`[PlusUnlocker] Remove donations`, response);
+  return {
+    donations: [],
+  };
+});
+
+// Убрать блоки концертов если блок концертов отключен
+onYandexApiResponse("/concerts", async function (response: any) {
+  const hiddenMenuItems = (await window.yandexMusicMod.getStorageValue("custom-themes/hideMenuItems")) || [];
+
+  if (hiddenMenuItems.includes("concerts")) {
+    console.log(`[PlusUnlocker] Remove concerts`, response);
+
+    return {
+      concerts: [],
+    };
+  }
+});
+
+onYandexApiResponse("/rotor/session/", async function (response: any) {
+  const url: string = response.url;
+  const data = response.data;
+
+  if (url.includes("feedback")) return data;
+
+  const tracks = data.sequence;
+
+  const isAllAds = tracks.every((trackInfo: any) => trackInfo.track && trackInfo.track.title === "Промокод Upgrade");
+
+  data.sequence = tracks.filter((trackInfo: any) => trackInfo.track && trackInfo.track.title !== "Промокод Upgrade");
+  console.log(`[PlusUnlocker] Remove all ads from session:`, data);
+
+  if (isAllAds) {
+    toast.error("Моя Волна больше не работает", {
+      description:
+        "Яндекс выдал вашему аккаунту теневой бан. Вы все еще сможете слушать треки в плейлистах и через поиск, но для получения рекомендаций нужно будет создать новый аккаунт и перенести треки туда, такая функция есть в моде.",
+      icon: null,
+    });
+  }
+
+  return data;
+});
+
 // Автоматически нажать на кнопку входа чтобы не смущать пользователя сообщением о том, что необходим плюс
 setInterval(function (): void {
   const loginButton: HTMLButtonElement | null = window.document.querySelector(
@@ -103,40 +152,51 @@ setInterval(function (): void {
   if (loginButton) loginButton.click();
 }, 500);
 
+// Подпись запросов текстов песен под Android-клиент (даёт доступ к синхронным текстам).
+// Активно только когда выбран источник "yandex": для lrclib/musixmatch тело ответа
+// подменяется в features/lyrics, а подпись яндекса не нужна.
 onYandexApiRequest("/lyrics?", async function (request: any) {
-  request.headers.set("x-yandex-music-client", "YandexMusicAndroid/24023621");
-  var url = new URL(request.url);
-  var pathSegments = url.pathname.split("/");
-  var trackId = pathSegments[2];
-  var timestamp = url.searchParams.get("timeStamp");
-  var oldSign = url.searchParams.get("sign");
-  var newSign = await getLyricsSign(`${trackId}${timestamp}`);
-  url.searchParams.set("sign", newSign);
+  const source = await getLyricsSource();
+  if (source !== "yandex") return undefined;
 
-  const newRequest = new Request(url.toString(), {
-    method: request.method,
-    headers: request.headers,
-    body: request.body,
-    mode: request.mode,
-    credentials: request.credentials,
-    cache: request.cache,
-    redirect: request.redirect,
-    referrer: request.referrer,
-    referrerPolicy: request.referrerPolicy,
-    integrity: request.integrity,
-    keepalive: request.keepalive,
-    signal: request.signal,
-  });
+  try {
+    request.headers.set("x-yandex-music-client", "YandexMusicAndroid/24023621");
+    var url = new URL(request.url);
+    var pathSegments = url.pathname.split("/");
+    var trackId = pathSegments[2];
+    var timestamp = url.searchParams.get("timeStamp");
+    var oldSign = url.searchParams.get("sign");
+    var newSign = await getLyricsSign(`${trackId}${timestamp}`);
+    url.searchParams.set("sign", newSign);
 
-  console.log(`[PlusUnlocker] Patch getLyrics url:`, {
-    url: newRequest.url,
-    trackId: trackId,
-    timestamp: timestamp,
-    oldSign: oldSign,
-    newSign: newSign,
-  });
+    const newRequest = new Request(url.toString(), {
+      method: request.method,
+      headers: request.headers,
+      body: request.body,
+      mode: request.mode,
+      credentials: request.credentials,
+      cache: request.cache,
+      redirect: request.redirect,
+      referrer: request.referrer,
+      referrerPolicy: request.referrerPolicy,
+      integrity: request.integrity,
+      keepalive: request.keepalive,
+      signal: request.signal,
+    });
 
-  return newRequest;
+    console.log(`[PlusUnlocker] Patch getLyrics url:`, {
+      url: newRequest.url,
+      trackId: trackId,
+      timestamp: timestamp,
+      oldSign: oldSign,
+      newSign: newSign,
+    });
+
+    return newRequest;
+  } catch (e) {
+    console.error("[PlusUnlocker] getLyrics sign patch failed, passing through:", e);
+    return undefined;
+  }
 });
 
 async function getLyricsSign(a) {
