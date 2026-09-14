@@ -7,6 +7,9 @@ declare global {
       downloadTrack: (downloadInfo: any, trackMeta: any, customDownloadPath?: string) => any;
       selectDownloadFolder: () => Promise<{ success: boolean; path: string | null }>;
       openFolder: (folderPath: string) => Promise<{ success: boolean; error?: string }>;
+      openDownloadDirectory: () => void;
+      axios: (config: any) => Promise<{ success: boolean; data?: any; status?: number }>;
+      forceQuit: () => Promise<{ success: boolean }>;
     };
     VERSION: string;
     __getPlayerState: () => any;

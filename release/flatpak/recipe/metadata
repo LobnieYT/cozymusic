@@ -1,0 +1,17 @@
+[Application]
+name=org.yandex.MusicMod
+runtime=org.freedesktop.Platform/x86_64/25.08
+sdk=org.freedesktop.Sdk/x86_64/25.08
+command=yandex-music-mod
+
+[ComponentView]
+
+[Finish-Args]
+share=network; share=ipc; socket=x11; socket=wayland; socket=pulseaudio;
+device=dri; filesystem=xdg-run/discord-ipc-0; filesystem=xdg-run/app/com.discordapp.Discord;
+
+[Context]
+shared=ipc;network;
+sockets=pulseaudio;wayland;x11;
+devices=dri;
+filesystems=xdg-run/app/com.discordapp.Discord;xdg-run/discord-ipc-0;

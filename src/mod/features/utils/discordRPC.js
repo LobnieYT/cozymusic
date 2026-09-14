@@ -4,7 +4,8 @@ const { Client } = require("@xhayper/discord-rpc");
 const CLIENT_ID = "1283109459463377011";
 const ACTIVITY_COOLDOWN = 10 * 1000;
 
-let lastActivityChanged = Date.now();
+let lastActivityChanged = 0;
+let lastTrackId = null;
 let client;
 
 function initRpc() {
@@ -18,6 +19,9 @@ function initRpc() {
   client.on("ready", () => {
     console.log("[DISCORD RPC] Hooked!");
     console.log("client.user", client.user?.username);
+    // Сразу обновить статус после (пере)подключения, без ожидания кулдауна
+    lastActivityChanged = 0;
+    lastTrackId = null;
   });
 
   client.on("disconnected", () => {
@@ -35,28 +39,46 @@ function initRpc() {
   });
 }
 
+function clearPresence() {
+  try {
+    if (client && client.user) client.user.clearActivity();
+  } catch (e) {}
+  lastTrackId = null;
+}
+
 async function updateActivity() {
   setTimeout(updateActivity, 500);
 
-  if (lastActivityChanged + ACTIVITY_COOLDOWN > Date.now()) return;
-
-  if (!client.user) return;
-
   try {
+    if (!client || !client.user) return;
+
     const playerState = await GetAppPlayerState();
+
+    // Состояние плеера недоступно — статус надо УБРАТЬ, а не оставлять висеть старый
+    if (!playerState || !playerState.data) {
+      clearPresence();
+      return;
+    }
 
     // Discord RPC не включен
     if (!playerState.enabled) {
-      client.user.clearActivity();
+      clearPresence();
       return;
     }
 
     const playerStateData = playerState.data;
 
     if (!playerStateData.isPlaying) {
-      client.user.clearActivity();
+      clearPresence();
       return;
     }
+
+    const trackId = playerStateData.trackMeta && playerStateData.trackMeta.id;
+    const trackChanged = trackId !== undefined && trackId !== lastTrackId;
+
+    // Кулдаун действует только пока играет ТОТ ЖЕ трек.
+    // Смена трека обновляет статус сразу, иначе в Discord висит старый.
+    if (!trackChanged && lastActivityChanged + ACTIVITY_COOLDOWN > Date.now()) return;
 
     const startTimestamp = Math.round(Date.now() - playerStateData.playback.position * 1000);
     const endTimestamp = Math.round(
@@ -88,14 +110,15 @@ async function updateActivity() {
 
     if (playerState.showModButton) {
       rpcRequest.buttons.push({
-        label: "💻 Yandex Music Mod",
-        url: `https://github.com/Stephanzion/YandexMusicBetaMod`,
+        label: "💻 Cozymusic",
+        url: `https://github.com/LobnieYT/cozymusic`,
       });
     }
 
     client.user.setActivity(rpcRequest);
 
     lastActivityChanged = Date.now();
+    lastTrackId = trackId;
   } catch (ex) {
     console.log("[DISCORD RPC]", ex);
   }
@@ -113,4 +136,5 @@ async function GetAppPlayerState() {
         })()
        `);
   }
+  return null;
 }

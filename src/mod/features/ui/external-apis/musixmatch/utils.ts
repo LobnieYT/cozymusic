@@ -1,7 +1,7 @@
 import { err, ok, Result } from "neverthrow";
 
 export async function signRequestUrl(originalUrl: string): Promise<Result<string, Error>> {
-	const secretKey = "***REMOVED***";
+	const secretKey = "967Pn4)N3&R_GBg5$b('";
 
 	try {
 		// Текущая дата в формате yMMdd
