@@ -33,5 +33,5 @@
 
 ## 
 
-[![ds](https://i.imgur.com/U49ffzY.png)](https://discord.com/mS5WJfWEht)
+[![ds](https://i.imgur.com/U49ffzY.png)](https://discord.gg/mS5WJfWEht)
 
