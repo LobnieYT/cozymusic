@@ -1,0 +1,4 @@
+#!/bin/sh
+# Лаунчер для flatpak: suid-песочница Chromium невозможна внутри
+# flatpak-песочницы, поэтому --no-sandbox (внешний bubblewrap сохраняется).
+exec /app/cozymusic/yandexmusic --no-sandbox "$@"

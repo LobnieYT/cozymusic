@@ -110,7 +110,7 @@ async function updateActivity() {
 
     if (playerState.showModButton) {
       rpcRequest.buttons.push({
-        label: "💻 Cozymusic",
+        label: "💻 CozyMusic",
         url: `https://github.com/LobnieYT/cozymusic`,
       });
     }
