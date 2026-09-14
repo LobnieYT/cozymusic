@@ -1,5 +1,5 @@
 name: yandex-music-mod
-version: '1.0.0'
+version: '1.0.1'
 summary: Cozymusic
 description: |
   Мод десктопного клиента Яндекс Музыки (база 5.119.0, самообновления заблокированы).

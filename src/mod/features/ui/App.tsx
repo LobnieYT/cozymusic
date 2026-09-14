@@ -178,18 +178,16 @@ export default function App() {
             }}
           ></div>
 
-          <div className="relative m-3 mb-0 overflow-hidden rounded-xl border border-violet-400/30 bg-gradient-to-br from-violet-600/30 via-fuchsia-600/15 to-indigo-600/25 px-4 py-3 shadow-sm">
-            <div
-              className="pointer-events-none absolute inset-0 opacity-40"
-              style={{
-                backgroundImage: `url(${logo})`,
-                backgroundSize: "110px",
-                backgroundPosition: "right -20px center",
-                backgroundRepeat: "no-repeat",
-                maskImage: "linear-gradient(to left, black, transparent 70%)",
-                WebkitMaskImage: "linear-gradient(to left, black, transparent 70%)",
-              }}
-            />
+          <div
+            className="relative m-3 mb-0 overflow-hidden rounded-2xl border border-violet-400/40 px-4 py-3 shadow-[0_0_28px_-6px_rgba(167,139,250,0.5)]"
+            style={{
+              background:
+                "linear-gradient(115deg, rgba(109,40,217,0.38) 0%, rgba(192,38,211,0.20) 48%, rgba(30,27,75,0.45) 100%)",
+            }}
+          >
+            <div className="pointer-events-none absolute -top-12 -left-12 h-32 w-32 rounded-full bg-fuchsia-500/25 blur-2xl" />
+            <div className="pointer-events-none absolute -right-10 -bottom-12 h-32 w-32 rounded-full bg-violet-500/30 blur-2xl" />
+            <div className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-fuchsia-300/60 to-transparent" />
             <div className="relative flex items-center justify-between">
               <div className="flex items-center gap-2.5">
                 <div
@@ -200,11 +198,14 @@ export default function App() {
                   }}
                 />
                 <div className="flex flex-col leading-tight">
-                  <span className="bg-gradient-to-r from-violet-200 via-fuchsia-200 to-violet-200 bg-clip-text text-lg font-black tracking-wide text-transparent">
+                  <span className="bg-gradient-to-r from-violet-100 via-fuchsia-200 to-violet-100 bg-clip-text text-lg font-black tracking-wider text-transparent drop-shadow-[0_0_12px_rgba(217,70,239,0.35)]">
                     Cozymusic
                   </span>
-                  <span className="text-muted-foreground text-[11px] font-semibold">
-                    v{import.meta.env.VITE_MOD_VERSION} • мод для Яндекс Музыки
+                  <span className="mt-0.5 flex items-center gap-1.5">
+                    <span className="rounded-full border border-fuchsia-300/40 bg-fuchsia-400/15 px-2 py-px text-[10px] font-bold text-fuchsia-100">
+                      v{import.meta.env.VITE_MOD_VERSION}
+                    </span>
+                    <span className="text-muted-foreground text-[11px] font-semibold">мод для Яндекс Музыки</span>
                   </span>
                 </div>
               </div>

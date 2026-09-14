@@ -1,0 +1,2 @@
+6fe317ed6e6c541083c0f8f49362546f9b5b7b2e138e5842effdf3e6ffc3ddca  release/snap/yandex-music-mod_1.0.1_amd64.snap
+eed82270920eca783f00bf27a4e4d4cc5755bf7c29c1f551bc89b45b5fa03e0b  release/flatpak/org.yandex.MusicMod.flatpak
