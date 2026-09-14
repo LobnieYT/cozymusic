@@ -3,9 +3,7 @@
 
 Набор модов для десктопного приложения Яндекс Музыка, позволяющих пользоваться программой без подписки, скачивать треки и многое другое
 
-![cover](https://github.com/user-attachments/assets/8ff80ba8-4b3a-4bd6-8c11-3b8ec2fc0e94)
-
-[![Последний релиз](https://img.shields.io/github/downloads/Stephanzion/YandexMusicBetaMod/total?style=flat&label=%D0%A1%D0%BA%D0%B0%D1%87%D0%B0%D1%82%D1%8C)](https://github.com/Stephanzion/YandexMusicBetaMod/releases/latest)
+![cover](https://i.imgur.com/VMFT6ba.jpeg)
 
 > [!WARNING]
 > Яндекс начал вешать плашку "Уязвимость в приложении" и вставлять рекламу в треки для некоторых аккаунтов, которые пользуются обходами плюса. Эта проблема решается модом.
@@ -14,6 +12,8 @@
 
 ## ❤️ Приемущества:
 ✔️ Работает без плюса
+
+📄 Полностью работают подкасты и тексты песен
 
 💜 Интеграция с Discord
 
@@ -30,18 +30,18 @@
 </> Возможность включить режим разработчика
 
 
+
+
 ## 💀 Ограничения:
 • У Яндекса строгие региональные ограничения - приложение работает только в [некоторых странах](https://yandex.ru/support/music/ru/access.html). Если вы используете VPN - поменяйте геолокацию на одну из них
 
-• Не работают подкасты. Работа над этим ведётся
-
 # 💻 Как установить и пользоваться:
 
-1. [Просто скачать последнюю версию](https://github.com/Vzlomhik2005/Yandex-Music-Mod/releases/latest) и установить её
+1. [Просто скачать последнюю версию](https://github.com/LobnieYT/cozymusic/releases) и установить её
 2. ... Готово! Мод можно использовать параллельно с обычной Яндекс Музыкой.
 
 ## 
 
-[![ds](https://github.com/user-attachments/assets/31ea9ce3-b604-4548-91cf-1bf98d2bdd93)](https://discord.gg/4nK7nk2sY8)
+[![ds](https://i.imgur.com/U49ffzY.png)](https://discord.com/mS5WJfWEht)
 
 
