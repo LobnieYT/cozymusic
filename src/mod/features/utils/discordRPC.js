@@ -80,10 +80,10 @@ async function updateActivity() {
     // Смена трека обновляет статус сразу, иначе в Discord висит старый.
     if (!trackChanged && lastActivityChanged + ACTIVITY_COOLDOWN > Date.now()) return;
 
-    const startTimestamp = Math.round(Date.now() - playerStateData.playback.position * 1000);
-    const endTimestamp = Math.round(
-      Date.now() + (playerStateData.playback.duration - playerStateData.playback.position) * 1000,
-    );
+    // Discord ждёт unix-timestamp в СЕКУНДАХ (Date.now() — миллисекунды)
+    const nowSec = Math.round(Date.now() / 1000);
+    const startTimestamp = Math.round(nowSec - playerStateData.playback.position);
+    const endTimestamp = Math.round(nowSec + (playerStateData.playback.duration - playerStateData.playback.position));
 
     const rpcRequest = {
       type: 2,
@@ -92,9 +92,6 @@ async function updateActivity() {
         : playerStateData.trackMeta.title,
       largeImageKey: playerStateData.trackMeta.coverUri
         ? `https://${playerStateData.trackMeta.coverUri.replaceAll("%%", "300x300")}`
-        : undefined,
-      largeImageKey: playerStateData.trackMeta.coverUri
-        ? `https://${playerStateData.trackMeta.coverUri.replaceAll("%%", "100x100")}`
         : undefined,
       state: playerStateData.trackMeta.artists.map((a) => a.name).join(", "),
       startTimestamp: startTimestamp,
