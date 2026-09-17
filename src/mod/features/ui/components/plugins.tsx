@@ -1,9 +1,10 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, Component, type ReactNode } from "react";
 
 import { ExpandableCard } from "@ui/components/ui/expandable-card";
 import { Label } from "@ui/components/ui/label";
 import { Switch } from "@ui/components/ui/switch";
 import { Button } from "@ui/components/ui/button";
+import { Input } from "@ui/components/ui/input";
 import { Slider } from "@ui/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@ui/components/ui/select";
 
@@ -25,6 +26,53 @@ import { hydratePluginSettings, setPluginSetting } from "~/mod/features/plugins/
 import { WALLPAPER_KEYS } from "~/mod/features/wallpapers/wallpapers";
 
 const WARNING_TEXT = "ВНИМАНИЕ! Данная функция находится в тестировании и крайне нестабильна. Используйте на свой страх и риск!";
+
+/** Страховка: падение одного плагина/карточки никогда не роняет меню целиком. */
+class PluginErrorBoundary extends Component<{ children: ReactNode; label: string }, { error: string | null }> {
+  constructor(props: { children: ReactNode; label: string }) {
+    super(props);
+    this.state = { error: null };
+  }
+  static getDerivedStateFromError(e: any) {
+    return { error: String(e?.message || e) };
+  }
+  componentDidCatch(e: any) {
+    console.error(`[plugins] UI crashed (${this.props.label}):`, e);
+  }
+  render() {
+    if (this.state.error) {
+      return (
+        <div className="m-3 rounded-xl border border-red-500/50 bg-red-500/10 px-3 py-2">
+          <span className="text-sm font-semibold text-red-300">Плагин «{this.props.label}» упал в интерфейсе</span>
+          <details className="text-muted-foreground mt-1 text-xs">
+            <summary className="cursor-pointer">Подробности</summary>
+            <pre className="mt-1 overflow-auto whitespace-pre-wrap">{this.state.error}</pre>
+          </details>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+/** Опции селектора бывают массивом И объектом-словарём — нормализуем оба вида. */
+function normalizeOptions(options: any): { id: string; name: string }[] {
+  if (!options) return [];
+  if (Array.isArray(options)) {
+    return options.map((o: any, i: number) => {
+      if (typeof o === "string") return { id: o, name: o };
+      const id = o.id ?? o.value ?? String(i);
+      return { id: String(id), name: String(o.name ?? o.label ?? o.text ?? id) };
+    });
+  }
+  if (typeof options === "object") {
+    return Object.entries(options).map(([key, v]: [string, any]) => {
+      if (typeof v === "string") return { id: key, name: v };
+      return { id: key, name: String(v?.name ?? v?.text ?? v?.label ?? key) };
+    });
+  }
+  return [];
+}
 
 async function isWallpapersEnabled(): Promise<boolean> {
   try {
@@ -148,9 +196,7 @@ function PluginCard({ meta, enabled, onToggle }: { meta: PluginMeta; enabled: bo
                     );
                   }
                   if (item.type === "selector") {
-                    const opts: { id: string; name: string }[] = ((item as any).options || []).map((o: any) =>
-                      typeof o === "string" ? { id: o, name: o } : { id: o.id, name: o.name || o.id },
-                    );
+                    const opts = normalizeOptions((item as any).options);
                     return (
                       <div key={item.id} className="flex flex-col gap-1">
                         <Label>{item.name}</Label>
@@ -166,6 +212,61 @@ function PluginCard({ meta, enabled, onToggle }: { meta: PluginMeta; enabled: bo
                             ))}
                           </SelectContent>
                         </Select>
+                      </div>
+                    );
+                  }
+                  if (item.type === "color") {
+                    const colorVal = typeof val === "string" && /^#[0-9a-fA-F]{6}$/.test(val) ? val : "#123456";
+                    return (
+                      <div key={item.id} className="flex flex-col gap-1">
+                        <Label>{item.name}</Label>
+                        <div className="flex items-center gap-2">
+                          <input
+                            type="color"
+                            value={colorVal}
+                            onChange={(e) => changeSetting(item.id, e.target.value)}
+                            className="h-9 w-12 cursor-pointer rounded-md border bg-transparent"
+                          />
+                          <span className="text-muted-foreground text-xs">{colorVal}</span>
+                        </div>
+                        {item.description && (
+                          <span className="text-muted-foreground text-xs">{item.description}</span>
+                        )}
+                      </div>
+                    );
+                  }
+                  if (item.type === "text") {
+                    const presets: { id: string; text: string }[] = Array.isArray((item as any).buttons)
+                      ? (item as any).buttons.map((b: any, i: number) => ({
+                          id: String(b?.id ?? i),
+                          text: String(b?.text ?? b?.defaultParameter ?? ""),
+                        }))
+                      : [];
+                    return (
+                      <div key={item.id} className="flex flex-col gap-1">
+                        <Label>{item.name}</Label>
+                        <Input
+                          value={typeof val === "string" ? val : String(val ?? "")}
+                          onChange={(e) => changeSetting(item.id, e.target.value)}
+                        />
+                        {presets.length > 0 && (
+                          <div className="flex flex-wrap gap-1">
+                            {presets.map((p) => (
+                              <Button
+                                key={p.id}
+                                variant="outline"
+                                size="sm"
+                                className="h-7 px-2 text-xs"
+                                onClick={() => changeSetting(item.id, p.text)}
+                              >
+                                {p.text || "∅"}
+                              </Button>
+                            ))}
+                          </div>
+                        )}
+                        {item.description && (
+                          <span className="text-muted-foreground text-xs">{item.description}</span>
+                        )}
                       </div>
                     );
                   }
@@ -222,7 +323,9 @@ export function PluginsDev() {
         <span className="text-sm leading-snug font-bold text-red-300">{WARNING_TEXT}</span>
       </div>
       {PLUGIN_REGISTRY.map((meta) => (
-        <PluginCard key={meta.id} meta={meta} enabled={enabledIds.includes(meta.id)} onToggle={toggle} />
+        <PluginErrorBoundary key={meta.id} label={meta.name}>
+          <PluginCard meta={meta} enabled={enabledIds.includes(meta.id)} onToggle={toggle} />
+        </PluginErrorBoundary>
       ))}
       <div className="px-4 pb-1">
         <Button
