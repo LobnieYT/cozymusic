@@ -15,12 +15,15 @@ electron.contextBridge.exposeInMainWorld("yandexMusicMod", {
   openFolder: (folderPath: string) => electron.ipcRenderer.invoke("yandexMusicMod.openFolder", folderPath),
   axios: (config: any) => electron.ipcRenderer.invoke("yandexMusicMod.axios", config),
   forceQuit: () => electron.ipcRenderer.invoke("yandexMusicMod.forceQuit"),
+  setWindowOpacity: (value: number) => electron.ipcRenderer.invoke("yandexMusicMod.setWindowOpacity", value),
 });
 
-// Register Ctrl+Shift+I to open DevTools
-electron.globalShortcut.register("CommandOrControl+Shift+I", () => {
-  const focusedWindow = electron.BrowserWindow.getFocusedWindow();
-  if (focusedWindow) {
-    focusedWindow.webContents.toggleDevTools();
-  }
-});
+// Register Ctrl+Shift+I to open DevTools (может отсутствовать в preload-контексте — тогда хоткей ставит main-процесс)
+try {
+  electron.globalShortcut.register("CommandOrControl+Shift+I", () => {
+    const focusedWindow = electron.BrowserWindow.getFocusedWindow();
+    if (focusedWindow) {
+      focusedWindow.webContents.toggleDevTools();
+    }
+  });
+} catch (e) {}

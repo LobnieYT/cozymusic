@@ -310,6 +310,19 @@ electron.ipcMain.handle("yandexMusicMod.forceQuit", async () => {
   return { success: true };
 });
 
+// window API - прозрачность окна (0.2..1, Linux/X11; на Wayland может не работать)
+electron.ipcMain.handle("yandexMusicMod.setWindowOpacity", async (_ev, value) => {
+  const v = Math.min(1, Math.max(0.2, Number(value) || 1));
+  try {
+    electron.BrowserWindow.getAllWindows().forEach((win) => {
+      try {
+        win.setOpacity(v);
+      } catch (e) {}
+    });
+  } catch (e) {}
+  return { success: true, opacity: v };
+});
+
 // Функция для расшифровки зашифрованного трека
 async function decryptYandexAudio(encryptedData, secretKey) {
   const hexToUint8Array = (hexString) => new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));

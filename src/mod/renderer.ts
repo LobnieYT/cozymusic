@@ -33,5 +33,8 @@ import "./features/settings";
 // Инициализация мода для переопределения экспериментов
 import "./features/experiments-toggle";
 
+// Инициализация кастомных обоев Яндекс Музыки
+import "./features/wallpapers";
+
 // Инициализация подмены источника текстов песен (yandex/lrclib/musixmatch)
 import "./features/lyrics";
