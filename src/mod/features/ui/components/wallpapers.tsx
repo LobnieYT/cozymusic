@@ -125,7 +125,17 @@ export function Wallpapers() {
           <Switch
             id="wallpapers-enabled-toggle"
             checked={enabled}
-            onCheckedChange={(value) => {
+            onCheckedChange={async (value) => {
+              if (value) {
+                try {
+                  const ids: string[] =
+                    (await (window as any).yandexMusicMod.getStorageValue("plugins/enabled")) || [];
+                  if (ids.includes("custom-background")) {
+                    toast.error('Выключите плагин "CustomBackground"');
+                    return;
+                  }
+                } catch {}
+              }
               setEnabled(value);
               (window as any).yandexMusicMod.setStorageValue(WALLPAPER_KEYS.enabled, value);
             }}

@@ -1,0 +1,25 @@
+{
+    "id": "slopless",
+    "name": "Slopless",
+    "description": "Очистите свою медиатеку от музыки, сгенерированной ИИ. Аддон помечает ИИ-треки и умеет автоматически их пропускать или дизлайкать.",
+    "version": "1.3.0",
+    "author": [
+        "slyf",
+        "alexeyfv"
+    ],
+    "type": "script",
+    "image": "Assets/logo.png",
+    "banner": "Assets/banner.png",
+    "libraryLogo": "",
+    "css": "script.css",
+    "script": "script.js",
+    "tags": [
+        "tools",
+        "ai"
+    ],
+    "dependencies": [],
+    "allowedUrls": [
+        "https://slopless.art/"
+    ],
+    "supportedVersions": []
+}

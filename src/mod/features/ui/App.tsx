@@ -21,7 +21,8 @@ import { ScaleChanger } from "@ui/components/scale-changer";
 import { LyricsSource } from "@ui/components/lyrics-source";
 import { CustomThemes } from "@ui/components/custom-themes";
 import { Wallpapers, WindowOpacity } from "@ui/components/wallpapers";
-import { NewYearSnowfall, NewYearSnowfallAnimation } from "@ui/components/snowfall-animation";
+import { PluginsDev } from "@ui/components/plugins";
+import { NewYearSnowfallAnimation } from "@ui/components/snowfall-animation";
 
 import { Button } from "./components/ui/button";
 import { ExpandedByDefaultContext } from "./components/ui/expandable-card";
@@ -30,7 +31,7 @@ import logo from "@ui/assets/cozy-logo.png?inline";
 import discordBg from "@ui/assets/discord-bg.png?inline";
 
 import { FaDiscord, FaGithub } from "react-icons/fa";
-import { Power, Download, Volume2, Heart, MicVocal, Palette, Type, Scaling, Snowflake, Gamepad2, Settings as SettingsIcon, Wrench, FlaskConical } from "lucide-react";
+import { Power, Download, Volume2, Heart, MicVocal, Palette, Type, Scaling, Gamepad2, Settings as SettingsIcon, Wrench, FlaskConical, Puzzle } from "lucide-react";
 
 const IS_DEV = false;
 const DISCORD_INVITE_URL = "https://discord.gg/mS5WJfWEht";
@@ -44,11 +45,11 @@ type MenuKey =
   | "themes"
   | "fonts"
   | "scale"
-  | "snow"
   | "discord"
   | "settings"
   | "devtools"
-  | "experiments";
+  | "experiments"
+  | "plugins";
 
 function MenuSection({ title, children }: { title: string; children: React.ReactNode }) {
   return (
@@ -260,7 +261,6 @@ export default function App() {
                 <NavButton active={selected === "themes"} icon={<Palette />} label="Темы" onClick={() => setSelected("themes")} />
                 <NavButton active={selected === "fonts"} icon={<Type />} label="Шрифты" onClick={() => setSelected("fonts")} />
                 <NavButton active={selected === "scale"} icon={<Scaling />} label="Масштаб" onClick={() => setSelected("scale")} />
-                <NavButton active={selected === "snow"} icon={<Snowflake />} label="Снег" onClick={() => setSelected("snow")} />
               </MenuSection>
 
               <MenuSection title="Интеграции">
@@ -273,6 +273,10 @@ export default function App() {
                 {devtoolsEnabled && (
                   <NavButton active={selected === "experiments"} icon={<FlaskConical />} label="Эксперименты" onClick={() => setSelected("experiments")} />
                 )}
+              </MenuSection>
+
+              <MenuSection title="DEV">
+                <NavButton active={selected === "plugins"} icon={<Puzzle />} label="Плагины (dev)" onClick={() => setSelected("plugins")} />
               </MenuSection>
             </div>
 
@@ -295,13 +299,13 @@ export default function App() {
                 {selected === "themes" && <WindowOpacity />}
                 {selected === "fonts" && <FontChanger />}
                 {selected === "scale" && <ScaleChanger />}
-                {selected === "snow" && <NewYearSnowfall />}
 
                 {selected === "discord" && <DiscordRPC />}
 
                 {selected === "settings" && <Settings />}
                 {selected === "devtools" && <Devtools />}
                 {selected === "experiments" && devtoolsEnabled && <ExperimentsToggle />}
+                {selected === "plugins" && <PluginsDev />}
                 {/* {devtoolsEnabled && <Playground />} */}
                 </ExpandedByDefaultContext.Provider>
 

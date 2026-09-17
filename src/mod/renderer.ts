@@ -33,6 +33,9 @@ import "./features/settings";
 // Инициализация мода для переопределения экспериментов
 import "./features/experiments-toggle";
 
+// Инициализация сторонних плагинов с GitHub (pulsesync-совместимых)
+import "./features/plugins";
+
 // Инициализация кастомных обоев Яндекс Музыки
 import "./features/wallpapers";
 

@@ -1,0 +1,115 @@
+{
+    "sections": [
+        {
+            "title": "Поведение плеера",
+            "items": [
+                {
+                    "id": "behavior",
+                    "name": "Действие при воспроизведении",
+                    "description": "Что должен сделать плеер, когда начинает играть ИИ-музыка?",
+                    "type": "selector",
+                    "value": "0",
+                    "options": [
+                        {
+                            "key": "dislike",
+                            "name": "👎 Дизлайк и пропуск"
+                        },
+                        {
+                            "name": "👎 Дизлайк (если нет лайка)",
+                            "id": "dislike_if_not_liked"
+                        },
+                        {
+                            "name": "⏭ Просто пропустить",
+                            "id": "skip"
+                        },
+                        {
+                            "name": "⏭ Пропустить (если нет лайка)",
+                            "id": "skip_if_not_liked"
+                        },
+                        {
+                            "name": "👀 Ничего не делать (только бейджики)",
+                            "id": "nothing"
+                        },
+                        {
+                            "name": "❤️ Лайк",
+                            "id": "like"
+                        }
+                    ],
+                    "defaultValue": "0"
+                },
+                {
+                    "id": "detectionMode",
+                    "name": "Условие определения ИИ",
+                    "description": "По каким критериям плагин решает, что песню нужно заблокировать.",
+                    "type": "selector",
+                    "value": "1",
+                    "options": [
+                        {
+                            "name": "Строго: трек ИЛИ хотя бы один из авторов — ИИ",
+                            "id": "paranoid"
+                        },
+                        {
+                            "name": "Баланс: трек ИЛИ все авторы — ИИ",
+                            "id": "balance"
+                        },
+                        {
+                            "name": "Мягко: проверять только сам трек",
+                            "id": "track_only"
+                        }
+                    ],
+                    "defaultValue": "1"
+                },
+                {
+                    "id": "artistThreshold",
+                    "name": "Порог «ИИ-шности» артиста (%)",
+                    "description": "Какой процент треков артиста должен быть от ИИ, чтобы считать его нейро-артистом (рекомендуется 10%).",
+                    "type": "slider",
+                    "min": 1,
+                    "max": 100,
+                    "step": 1,
+                    "value": 10,
+                    "defaultValue": 10
+                }
+            ]
+        },
+        {
+            "title": "Визуальные метки ИИ",
+            "items": [
+                {
+                    "id": "showArtistLabels",
+                    "name": "Помечать ИИ-артистов",
+                    "description": "Показывать метку «ИИ» рядом с именами артистов.",
+                    "type": "button",
+                    "value": true,
+                    "defaultValue": true
+                },
+                {
+                    "id": "showTrackLabels",
+                    "name": "Помечать ИИ-треки",
+                    "description": "Показывать метку «ИИ» рядом с названиями треков.",
+                    "type": "button",
+                    "value": true,
+                    "defaultValue": true
+                },
+                {
+                    "id": "locale",
+                    "name": "Язык меток / Language",
+                    "description": "Язык всплывающих подсказок у бейджиков.",
+                    "type": "selector",
+                    "value": "0",
+                    "options": [
+                        {
+                            "name": "Русский",
+                            "id": "ru"
+                        },
+                        {
+                            "name": "English",
+                            "id": "en"
+                        }
+                    ],
+                    "defaultValue": "0"
+                }
+            ]
+        }
+    ]
+}
