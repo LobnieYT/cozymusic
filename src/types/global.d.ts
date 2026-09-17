@@ -10,6 +10,7 @@ declare global {
       openDownloadDirectory: () => void;
       axios: (config: any) => Promise<{ success: boolean; data?: any; status?: number }>;
       forceQuit: () => Promise<{ success: boolean }>;
+      setWindowOpacity: (value: number) => Promise<{ success: boolean; opacity?: number }>;
     };
     VERSION: string;
     __getPlayerState: () => any;
