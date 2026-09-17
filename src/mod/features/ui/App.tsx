@@ -20,6 +20,7 @@ import { ExperimentsToggle } from "@ui/components/experiments-toggle";
 import { ScaleChanger } from "@ui/components/scale-changer";
 import { LyricsSource } from "@ui/components/lyrics-source";
 import { CustomThemes } from "@ui/components/custom-themes";
+import { Wallpapers, WindowOpacity } from "@ui/components/wallpapers";
 import { NewYearSnowfall, NewYearSnowfallAnimation } from "@ui/components/snowfall-animation";
 
 import { Button } from "./components/ui/button";
@@ -147,18 +148,19 @@ export default function App() {
 
   const sheetTrigger = (
     <>
-      <SheetTrigger className="flex w-full items-center justify-center gap-2.5 rounded-full border-2 border-violet-400/60 bg-gradient-to-r from-violet-500/15 via-fuchsia-500/10 to-violet-500/15 p-[5px] px-6 text-[var(--ym-controls-color-primary-text-enabled_variant)] transition-all duration-150 ease-in-out hover:border-violet-400 hover:from-violet-500/25 hover:to-fuchsia-500/20">
-        <div
-          className="h-[25px] w-[25px] bg-contain bg-no-repeat"
-          style={{
-            backgroundImage: `url(${logo})`,
-          }}
-        ></div>
-        <span className="trigger-text hidden bg-gradient-to-r from-violet-300 to-fuchsia-300 bg-clip-text font-bold text-transparent lg:inline">
-          CozyMusic
-        </span>
-        <Toaster position="bottom-right" />
-      </SheetTrigger>
+      <div className="cozy-trigger-wrap">
+        <SheetTrigger className="cozy-trigger-inner">
+          <div
+            className="cozy-trigger-logo"
+            style={{
+              backgroundImage: `url(${logo})`,
+            }}
+          ></div>
+          <span className="cozy-trigger-text trigger-text hidden lg:inline">CozyMusic</span>
+          <span className="cozy-trigger-dot" />
+          <Toaster position="bottom-right" />
+        </SheetTrigger>
+      </div>
 
       <NewYearSnowfallAnimation />
     </>
@@ -290,6 +292,8 @@ export default function App() {
                 {selected === "lyrics" && <LyricsSource />}
 
                 {selected === "themes" && <CustomThemes />}
+                {selected === "themes" && <Wallpapers />}
+                {selected === "themes" && <WindowOpacity />}
                 {selected === "fonts" && <FontChanger />}
                 {selected === "scale" && <ScaleChanger />}
                 {selected === "snow" && <NewYearSnowfall />}

@@ -128,13 +128,19 @@ initRpc();
 updateActivity();
 
 async function GetAppPlayerState() {
-  const [win] = BrowserWindow.getAllWindows();
-  if (win && !win.isDestroyed()) {
-    return win.webContents.executeJavaScript(`
+  // Окон может быть несколько (основное + OAuth-попапы): ищем то,
+  // где живёт модовый API состояния плеера.
+  const wins = BrowserWindow.getAllWindows();
+  for (const win of wins) {
+    if (!win || win.isDestroyed()) continue;
+    try {
+      const state = await win.webContents.executeJavaScript(`
         (()=>{
-            return window.__getPlayerState();
+            return typeof window.__getPlayerState === "function" ? window.__getPlayerState() : null;
         })()
        `);
+      if (state) return state;
+    } catch (e) {}
   }
   return null;
 }
