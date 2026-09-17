@@ -1,0 +1,2 @@
+a2249317c1dc0b5a183f092ac69df47eb709d6d97e39226a46132829ecf8f763  release/snap/cozymusic-player_1.1.0_amd64.snap
+5a1ddd3e9a30c4b95c9295a14bf6299ba11decaebfc1cc632b1acb58e71de18e  release/flatpak/org.cozymusic.player.flatpak
