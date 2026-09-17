@@ -157,7 +157,6 @@ export default function App() {
             }}
           ></div>
           <span className="cozy-trigger-text trigger-text hidden lg:inline">CozyMusic</span>
-          <span className="cozy-trigger-dot" />
           <Toaster position="bottom-right" />
         </SheetTrigger>
       </div>
