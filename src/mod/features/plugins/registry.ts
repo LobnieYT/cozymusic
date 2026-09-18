@@ -5,6 +5,8 @@ export interface PluginMeta {
   settingsName: string;
   /** отображаемое имя */
   name: string;
+  /** переопределение отображаемого имени (если в metadata upstream другое) */
+  displayName?: string;
   author: string;
   description: string;
   repo: string;
@@ -81,6 +83,7 @@ export const PLUGIN_REGISTRY: PluginMeta[] = [
     id: "mainpage-great-again",
     settingsName: "YM Old Home UI",
     name: "MainPage GreatAgain",
+    displayName: "Old Home UI",
     author: "desaichk, thekingoftime",
     description: "Возвращает старый дизайн главной страницы.",
     repo: "https://github.com/Desai0/MainPage-GreatAgain",

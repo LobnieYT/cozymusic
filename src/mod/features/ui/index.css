@@ -230,6 +230,16 @@ div[class*="PageHeaderArtist_donateControl__"] {
   transform: rotate(-8deg) scale(1.12);
 }
 .cozy-trigger-text {
+  /* свой класс вместо tailwind hidden: сторонние плагины (BetterPlayer)
+     переопределяют .hidden через !important и гасят текст кнопки */
+  display: none;
+}
+@media (min-width: 1024px) {
+  .cozy-trigger-text {
+    display: inline;
+  }
+}
+.cozy-trigger-text {
   background: linear-gradient(90deg, #c4b5fd, #f0abfc, #c4b5fd);
   background-size: 200% auto;
   -webkit-background-clip: text;

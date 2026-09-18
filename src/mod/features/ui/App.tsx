@@ -159,7 +159,7 @@ export default function App() {
               backgroundImage: `url(${logo})`,
             }}
           ></div>
-          <span className="cozy-trigger-text trigger-text hidden lg:inline">CozyMusic</span>
+          <span className="cozy-trigger-text trigger-text lg:inline">CozyMusic</span>
           <Toaster position="bottom-right" />
         </SheetTrigger>
       </div>
