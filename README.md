@@ -5,8 +5,6 @@
 
 <img width="568" height="320" alt="0918 (2)(2)" src="https://github.com/user-attachments/assets/49c0ed39-ea13-41b9-96c0-3e05a7192f13" />
 
-> [!NOTE]
-> Весь этот ролик был отснят без купленного "плюса"
 
 
 ## ❤️ Приемущества:
