@@ -11,6 +11,10 @@ declare global {
       axios: (config: any) => Promise<{ success: boolean; data?: any; status?: number }>;
       forceQuit: () => Promise<{ success: boolean }>;
       setWindowOpacity: (value: number) => Promise<{ success: boolean; opacity?: number }>;
+      listUserFonts: () => Promise<{ success: boolean; fonts?: { file: string; name: string; size: number }[] }>;
+      saveUserFont: (payload: { name: string; dataBase64: string }) => Promise<{ success: boolean; font?: { file: string; name: string; size: number }; error?: string }>;
+      deleteUserFont: (file: string) => Promise<{ success: boolean }>;
+      readUserFont: (file: string) => Promise<{ success: boolean; dataBase64?: string; mime?: string }>;
     };
     VERSION: string;
     __getPlayerState: () => any;
