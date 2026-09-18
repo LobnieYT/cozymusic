@@ -103,4 +103,32 @@ export const PLUGIN_REGISTRY: PluginMeta[] = [
     metaUrl:
       "https://raw.githubusercontent.com/LobnieYT/cozymusic/main/plugins/vendor/slopless-pulsesync/metadata.json",
   },
+  {
+    id: "track-follow",
+    settingsName: "TrackFollow",
+    name: "TrackFollow",
+    author: "Le_pexun",
+    description: "Добавляет изображение/GIF на прогресс-бар плеера.",
+    repo: "https://github.com/Deroff/TrackFollow",
+    scriptUrl: raw("Deroff/TrackFollow", "main", "script.js"),
+    styleUrl: raw("Deroff/TrackFollow", "main", "style.css"),
+    handlesUrl: raw("Deroff/TrackFollow", "main", "handleEvents.json"),
+    metaUrl: raw("Deroff/TrackFollow", "main", "metadata.json"),
+  },
+  {
+    id: "better-player",
+    settingsName: "BetterPlayer",
+    name: "BetterPlayer",
+    author: "WolfySoCute, forea.adoxid",
+    description: "Кастомизация для стандартного полноэкранного плеера.",
+    repo: "https://github.com/WolfySoCute/BetterPlayer-Addon",
+    scriptUrl:
+      "https://raw.githubusercontent.com/LobnieYT/cozymusic/main/plugins/vendor/better-player/script.js",
+    styleUrl:
+      "https://raw.githubusercontent.com/LobnieYT/cozymusic/main/plugins/vendor/better-player/script.css",
+    handlesUrl:
+      "https://raw.githubusercontent.com/LobnieYT/cozymusic/main/plugins/vendor/better-player/handleEvents.json",
+    metaUrl:
+      "https://raw.githubusercontent.com/LobnieYT/cozymusic/main/plugins/vendor/better-player/metadata.json",
+  },
 ];

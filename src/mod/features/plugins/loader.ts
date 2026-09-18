@@ -82,7 +82,12 @@ export function defaultsFromHandles(handles: PluginHandles | null): PluginSettin
   for (const section of handles.sections || []) {
     for (const item of section.items || []) {
       if (!item || !item.id) continue;
-      const v = item.defaultParameter !== undefined ? item.defaultParameter : item.value;
+      const v =
+        item.defaultParameter !== undefined
+          ? item.defaultParameter
+          : (item as any).defaultValue !== undefined
+            ? (item as any).defaultValue
+            : item.value;
       out[item.id] = { value: v !== undefined ? v : item.bool === true ? true : false };
     }
   }

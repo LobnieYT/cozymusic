@@ -8,7 +8,7 @@ import { Input } from "@ui/components/ui/input";
 import { Slider } from "@ui/components/ui/slider";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@ui/components/ui/select";
 
-import { Puzzle, AlertTriangle, ExternalLink } from "lucide-react";
+import { Puzzle, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
 
 import { PLUGIN_REGISTRY, type PluginMeta } from "~/mod/features/plugins/registry";
@@ -125,17 +125,7 @@ function PluginCard({ meta, enabled, onToggle }: { meta: PluginMeta; enabled: bo
       <div className="flex flex-col gap-3 pt-2 px-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col gap-0.5">
-            <span className="text-muted-foreground text-xs">
-              {live.author || meta.author} • {meta.id === "slopless" ? "v1.3.0 (vendored)" : "GitHub"}
-            </span>
             <span className="text-sm">{live.description || meta.description}</span>
-            <button
-              className="text-muted-foreground hover:text-foreground mt-1 flex w-fit cursor-pointer items-center gap-1 text-xs underline"
-              onClick={() => window.open(meta.repo, "_blank", "noreferrer")}
-            >
-              <ExternalLink className="h-3 w-3" />
-              {meta.repo.replace("https://github.com/", "")}
-            </button>
           </div>
           <Switch
             id={`plugin-toggle-${meta.id}`}
