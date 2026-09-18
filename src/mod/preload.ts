@@ -16,6 +16,11 @@ electron.contextBridge.exposeInMainWorld("yandexMusicMod", {
   axios: (config: any) => electron.ipcRenderer.invoke("yandexMusicMod.axios", config),
   forceQuit: () => electron.ipcRenderer.invoke("yandexMusicMod.forceQuit"),
   setWindowOpacity: (value: number) => electron.ipcRenderer.invoke("yandexMusicMod.setWindowOpacity", value),
+  listUserFonts: () => electron.ipcRenderer.invoke("yandexMusicMod.listUserFonts"),
+  saveUserFont: (payload: { name: string; dataBase64: string }) =>
+    electron.ipcRenderer.invoke("yandexMusicMod.saveUserFont", payload),
+  deleteUserFont: (file: string) => electron.ipcRenderer.invoke("yandexMusicMod.deleteUserFont", file),
+  readUserFont: (file: string) => electron.ipcRenderer.invoke("yandexMusicMod.readUserFont", file),
 });
 
 // Register Ctrl+Shift+I to open DevTools (может отсутствовать в preload-контексте — тогда хоткей ставит main-процесс)
