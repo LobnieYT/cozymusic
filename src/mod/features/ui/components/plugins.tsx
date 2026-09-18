@@ -119,7 +119,7 @@ function PluginCard({ meta, enabled, onToggle }: { meta: PluginMeta; enabled: bo
 
   return (
     <ExpandableCard
-      title={live.name || meta.name}
+      title={meta.displayName || live.name || meta.name}
       icon={<Puzzle className="h-4 w-4" />}
     >
       <div className="flex flex-col gap-3 pt-2 px-3">
