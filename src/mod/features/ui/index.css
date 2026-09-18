@@ -157,36 +157,25 @@ div[class*="PageHeaderArtist_donateControl__"] {
   display: none !important;
 }
 
-/* ==== CozyMusic trigger: animated conic border ==== */
-@property --cozy-angle {
-  syntax: '<angle>';
-  initial-value: 0deg;
-  inherits: false;
-}
+/* ==== CozyMusic trigger: статичный градиент + анимация только при наведении ==== */
 .cozy-trigger-wrap {
   position: relative;
   border-radius: 9999px;
   padding: 2px;
   background: conic-gradient(
-    from var(--cozy-angle),
+    from 210deg,
     #7c3aed,
     #d946ef,
     #4f46e5,
     #06b6d4,
     #7c3aed
   );
-  animation: cozy-spin 5s linear infinite;
   box-shadow: 0 0 18px -4px rgba(168, 85, 247, 0.55);
   transition: transform 0.15s ease, box-shadow 0.2s ease;
 }
 .cozy-trigger-wrap:hover {
   transform: scale(1.04);
   box-shadow: 0 0 26px -4px rgba(217, 70, 239, 0.75);
-}
-@keyframes cozy-spin {
-  to {
-    --cozy-angle: 360deg;
-  }
 }
 .cozy-trigger-inner {
   display: flex;
@@ -200,23 +189,6 @@ div[class*="PageHeaderArtist_donateControl__"] {
   cursor: pointer;
   position: relative;
   overflow: hidden;
-}
-.cozy-trigger-inner::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(110deg, transparent 30%, rgba(255, 255, 255, 0.14) 50%, transparent 70%);
-  transform: translateX(-120%);
-  animation: cozy-shine 4.5s ease-in-out infinite;
-  pointer-events: none;
-}
-@keyframes cozy-shine {
-  0%, 55% {
-    transform: translateX(-120%);
-  }
-  90%, 100% {
-    transform: translateX(120%);
-  }
 }
 .cozy-trigger-logo {
   height: 25px;
@@ -241,17 +213,9 @@ div[class*="PageHeaderArtist_donateControl__"] {
 }
 .cozy-trigger-text {
   background: linear-gradient(90deg, #c4b5fd, #f0abfc, #c4b5fd);
-  background-size: 200% auto;
   -webkit-background-clip: text;
   background-clip: text;
   color: transparent;
   font-weight: 800;
   letter-spacing: 0.04em;
-  animation: cozy-text-flow 4s linear infinite;
 }
-@keyframes cozy-text-flow {
-  to {
-    background-position: 200% center;
-  }
-}
-/* (точка статуса убрана) */
