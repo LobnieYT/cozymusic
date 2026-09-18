@@ -28,6 +28,7 @@ import { Button } from "./components/ui/button";
 import { ExpandedByDefaultContext } from "./components/ui/expandable-card";
 
 import logo from "@ui/assets/cozy-logo.png?inline";
+import donateLogo from "@ui/assets/donate-logo.png?inline";
 import discordBg from "@ui/assets/discord-bg.png?inline";
 
 import { FaDiscord, FaGithub } from "react-icons/fa";
@@ -36,6 +37,7 @@ import { Power, Download, Volume2, Heart, MicVocal, Palette, Type, Scaling, Game
 const IS_DEV = false;
 const DISCORD_INVITE_URL = "https://discord.gg/mS5WJfWEht";
 const GITHUB_REPO_URL = "https://github.com/LobnieYT/cozymusic";
+const DONATE_URL = "https://www.donationalerts.com/r/cozyproject";
 
 type MenuKey =
   | "downloader"
@@ -244,6 +246,25 @@ export default function App() {
                     <p>Исходный код на Github</p>
                   </TooltipContent>
                 </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="border-amber-300/30 bg-amber-400/10 backdrop-blur hover:bg-amber-400/25"
+                      onClick={() => window.open(DONATE_URL, "_blank", "noreferrer")}
+                    >
+                      <div
+                        className="h-[1.3rem]! w-[1.3rem]! bg-contain bg-no-repeat"
+                        style={{ backgroundImage: `url(${donateLogo})` }}
+                      />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>На чашечку кофе</p>
+                  </TooltipContent>
+                </Tooltip>
               </div>
             </div>
           </div>
@@ -273,10 +294,7 @@ export default function App() {
                 {devtoolsEnabled && (
                   <NavButton active={selected === "experiments"} icon={<FlaskConical />} label="Эксперименты" onClick={() => setSelected("experiments")} />
                 )}
-              </MenuSection>
-
-              <MenuSection title="DEV">
-                <NavButton active={selected === "plugins"} icon={<Puzzle />} label="Плагины (dev)" onClick={() => setSelected("plugins")} />
+                <NavButton active={selected === "plugins"} icon={<Puzzle />} label="Плагины" onClick={() => setSelected("plugins")} />
               </MenuSection>
             </div>
 
