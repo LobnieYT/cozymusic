@@ -56,7 +56,7 @@ export function DiscordRPC() {
             }}
           />
           <Label htmlFor="discord-mod-button-toggle" className="cursor-pointer">
-            Показывать кнопку YandexMusicMod
+            Показывать кнопку CozyMusic
           </Label>
         </div>
       </div>
