@@ -1,0 +1,90 @@
+{
+	"sections": [
+		{
+			"title": "Управление",
+			"items": [
+				{
+					"id": "controlsEnabled",
+					"name": "Новый вид управления плеером",
+					"description": "Включить измененный вид панели управления плеером",
+					"type": "button",
+					"value": true,
+					"defaultValue": true
+				},
+				{
+					"id": "controlsContentBackgroundStyle",
+					"name": "Стиль фона элементов управления плеером",
+					"description": "",
+					"type": "selector",
+					"value": 2,
+					"options": {
+						"1": {
+							"event": "none",
+							"name": "Отсутствует"
+						},
+						"2": {
+							"event": "blackBlur",
+							"name": "Темный с размытием"
+						},
+						"3": {
+							"event": "inverted",
+							"name": "Инвертированный"
+						}
+					},
+					"defaultValue": 2
+				}
+			]
+		},
+		{
+			"title": "Фон",
+			"items": [
+				{
+					"id": "backgroundCover",
+					"name": "Обложка на фон",
+					"description": "Заменить фон плеера на обложку трека",
+					"type": "button",
+					"value": true,
+					"defaultValue": true
+				},
+				{
+					"id": "backgroundImage",
+					"name": "Своё фоновое изображение",
+					"description": "Установить своё изображение для полноэкранного плеера",
+					"type": "text",
+					"value": "",
+					"defaultValue": ""
+				},
+				{
+					"id": "backgroundBrightness",
+					"name": "Яркость (%)",
+					"description": "Яркость фона полноэкранного плеера",
+					"type": "slider",
+					"min": 0,
+					"max": 100,
+					"step": 1,
+					"value": 100,
+					"defaultValue": 100
+				},
+				{
+					"id": "backgroundBrightnessCorrection",
+					"name": "Нормализация яркости",
+					"description": "Автоматическое затемнение яркости фона плеера",
+					"type": "button",
+					"value": true,
+					"defaultValue": true
+				},
+				{
+					"id": "backgroundBlur",
+					"name": "Блюр (px)",
+					"description": "Блюр фона полноэкранного плеера",
+					"type": "slider",
+					"min": 0,
+					"max": 30,
+					"step": 1,
+					"value": 8,
+					"defaultValue": 8
+				}
+			]
+		}
+	]
+}

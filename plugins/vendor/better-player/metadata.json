@@ -1,0 +1,31 @@
+{
+    "id": "betterplayer",
+    "name": "BetterPlayer",
+    "description": "Кастомизация для стандартного полноэкранного плеера",
+    "version": "1.6.1",
+    "author": [
+        "WolfySoCute",
+        "forea.adoxid"
+    ],
+    "type": "script",
+    "image": "image.png",
+    "banner": "banner.png",
+    "libraryLogo": "",
+    "css": "script.css",
+    "script": "script.js",
+    "tags": [
+        "customization",
+        "player"
+    ],
+    "dependencies": [],
+    "allowedUrls": [
+        "https://i.ibb.co/",
+        "https://i.postimg.cc/",
+        "https://files.catbox.moe/"
+    ],
+    "supportedVersions": [
+        ">=5.90.0"
+    ],
+    "installSource": "local",
+    "storeAddonId": "0c8fa44f-e4e9-480b-a55f-24d27f42677b"
+}
