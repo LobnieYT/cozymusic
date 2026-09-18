@@ -323,6 +323,75 @@ electron.ipcMain.handle("yandexMusicMod.setWindowOpacity", async (_ev, value) =>
   return { success: true, opacity: v };
 });
 
+// window API - пользовательские шрифты (файлы в userData/cozy-fonts)
+const fontsDir = path.join(appFolder, "cozy-fonts");
+const FONT_MIME = { ".ttf": "font/ttf", ".otf": "font/otf", ".woff": "font/woff", ".woff2": "font/woff2" };
+
+electron.ipcMain.handle("yandexMusicMod.listUserFonts", async () => {
+  try {
+    fs.mkdirSync(fontsDir, { recursive: true });
+    return {
+      success: true,
+      fonts: fs
+        .readdirSync(fontsDir)
+        .filter((f) => FONT_MIME[path.extname(f).toLowerCase()])
+        .map((f) => {
+          const st = fs.statSync(path.join(fontsDir, f));
+          return { file: f, name: path.basename(f, path.extname(f)), size: st.size };
+        }),
+    };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
+});
+
+electron.ipcMain.handle("yandexMusicMod.saveUserFont", async (_ev, payload) => {
+  try {
+    if (!payload || !payload.dataBase64) return { success: false, error: "empty" };
+    fs.mkdirSync(fontsDir, { recursive: true });
+    const origName = String(payload.name || "font").slice(0, 80);
+    let ext = path.extname(origName).toLowerCase();
+    if (!FONT_MIME[ext]) {
+      const sniff = Buffer.from(payload.dataBase64.slice(0, 8), "base64");
+      ext = sniff.subarray(0, 4).toString() === "wOF2" ? ".woff2" : sniff.subarray(0, 4).toString() === "wOFF" ? ".woff" : sniff[0] === 0 && sniff[1] === 1 && sniff[2] === 0 && sniff[3] === 0 ? ".ttf" : sniff.subarray(0, 4).toString() === "OTTO" ? ".otf" : ".ttf";
+    }
+    const base = sanitize(path.basename(origName, path.extname(origName)) || "font") || "font";
+    let file = `${base}${ext}`;
+    let i = 1;
+    while (fs.existsSync(path.join(fontsDir, file))) file = `${base}-${i++}${ext}`;
+    const buf = Buffer.from(payload.dataBase64, "base64");
+    if (buf.length > 25 * 1024 * 1024) return { success: false, error: "too_big" };
+    fs.writeFileSync(path.join(fontsDir, file), buf);
+    const st = fs.statSync(path.join(fontsDir, file));
+    return { success: true, font: { file, name: path.basename(file, ext), size: st.size } };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
+});
+
+electron.ipcMain.handle("yandexMusicMod.deleteUserFont", async (_ev, file) => {
+  try {
+    const safe = path.basename(String(file || ""));
+    if (!safe || !FONT_MIME[path.extname(safe).toLowerCase()]) return { success: false };
+    fs.rmSync(path.join(fontsDir, safe), { force: true });
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
+});
+
+electron.ipcMain.handle("yandexMusicMod.readUserFont", async (_ev, file) => {
+  try {
+    const safe = path.basename(String(file || ""));
+    const ext = path.extname(safe).toLowerCase();
+    if (!safe || !FONT_MIME[ext]) return { success: false };
+    const data = fs.readFileSync(path.join(fontsDir, safe));
+    return { success: true, dataBase64: data.toString("base64"), mime: FONT_MIME[ext] };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
+});
+
 // Функция для расшифровки зашифрованного трека
 async function decryptYandexAudio(encryptedData, secretKey) {
   const hexToUint8Array = (hexString) => new Uint8Array(hexString.match(/.{1,2}/g).map((byte) => parseInt(byte, 16)));
