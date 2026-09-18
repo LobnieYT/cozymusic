@@ -4,7 +4,9 @@
 Кастомная сборка десктопного клиента Яндекс Музыки, снимающая ограничения подписки и добавляющая расширенный функционал для комфортного прослушивания.
 Все тот же мод, но с расширенной поддержкой Операционных систем.
 
-[![cover](https://media0.giphy.com/media/v1.Y2lkPTc5MGI3NjExNHprM2V1bzlud2llZ2R6M253ejc5a2pzYjdoaXY0Z2Q4MnduaHN4ZSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/UQPZ6swa3MAZH6cMvL/giphy.gif)](https://github.com/LobnieYT/cozymusic/releases)
+<img width="568" height="320" alt="0918 (2)(2)" src="https://github.com/user-attachments/assets/49c0ed39-ea13-41b9-96c0-3e05a7192f13" />
+
+
 
 > [!WARNING]
 > Яндекс начал вешать плашку "Уязвимость в приложении" и вставлять рекламу в треки для некоторых аккаунтов, которые пользуются обходами плюса. Эта проблема решается модом.
