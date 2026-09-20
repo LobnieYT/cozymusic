@@ -201,6 +201,8 @@ onYandexApiRequest("/lyrics?", async function (request: any) {
 
 async function getLyricsSign(a) {
   let t = "p93jhgh689SBReK6ghtw62"; // секретный ключ для android приложений
+  let n: any;
+  let i: any;
   ((n = new TextEncoder()), (i = n.encode(t)));
   return crypto.subtle
     .importKey(

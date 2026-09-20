@@ -11,6 +11,8 @@ declare global {
       axios: (config: any) => Promise<{ success: boolean; data?: any; status?: number }>;
       forceQuit: () => Promise<{ success: boolean }>;
       getEnv: () => Promise<{ success: boolean; flatpak?: boolean; snap?: boolean; platform?: string }>;
+      toggleDevTools: () => Promise<{ success: boolean; error?: string }>;
+      logRenderer: (text: string) => Promise<{ success: boolean }>;
       setWindowOpacity: (value: number) => Promise<{ success: boolean; opacity?: number }>;
       refreshShortcuts: () => Promise<{ success: boolean; registered?: { action: string; acc: string }[] }>;
       runMediaAction: (action: string) => Promise<{ success: boolean }>;

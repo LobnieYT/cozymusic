@@ -402,6 +402,45 @@ electron.ipcMain.handle("yandexMusicMod.getEnv", async () => {
   }
 });
 
+// window API - открыть/закрыть DevTools активного окна (работает и на Wayland,
+// где глобальные хоткеи недоступны)
+electron.ipcMain.handle("yandexMusicMod.toggleDevTools", async () => {
+  try {
+    const wins = electron.BrowserWindow.getAllWindows().filter((w) => {
+      try {
+        return !w.isDestroyed();
+      } catch (e) {
+        return false;
+      }
+    });
+    const focused = electron.BrowserWindow.getFocusedWindow();
+    const win = (focused && !focused.isDestroyed() && focused) || wins[0];
+    if (!win) return { success: false, error: "no_window" };
+    win.webContents.toggleDevTools();
+    return { success: true };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
+});
+
+// window API - запись ошибок рендера в файл (диагностика без DevTools)
+const rendererLogPath = path.join(appFolder, "cozy-renderer.log");
+electron.ipcMain.handle("yandexMusicMod.logRenderer", async (_ev, payload) => {
+  try {
+    const line = `[${new Date().toISOString()}] ${String((payload && payload.text) || payload || "").slice(0, 4000)}\n`;
+    try {
+      if (fs.existsSync(rendererLogPath) && fs.statSync(rendererLogPath).size > 2 * 1024 * 1024) {
+        fs.writeFileSync(rendererLogPath, line);
+      } else {
+        fs.appendFileSync(rendererLogPath, line);
+      }
+    } catch (e) {}
+    return { success: true };
+  } catch (e) {
+    return { success: false };
+  }
+});
+
 electron.ipcMain.handle("yandexMusicMod.refreshShortcuts", async () => refreshGlobalShortcuts());
 electron.ipcMain.handle("yandexMusicMod.runMediaAction", async (_ev, action) => ({ success: runMediaAction(action) }));
 

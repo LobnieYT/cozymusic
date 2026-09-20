@@ -6,6 +6,8 @@ import { Switch } from "@ui/components/ui/switch";
 import { Alert, AlertDescription } from "@ui/components/ui/alert";
 
 import { Info, Code } from "lucide-react";
+import { Button } from "@ui/components/ui/button";
+import { toast } from "sonner";
 
 export function Devtools() {
   const [devtoolsEnabled, setDevtoolsEnabled] = useState(false);
@@ -53,6 +55,26 @@ export function Devtools() {
           <Info />
           <AlertDescription>Потребуется перезапуск</AlertDescription>
         </Alert>
+
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            className="w-full"
+            onClick={async () => {
+              try {
+                const res = await (window as any).yandexMusicMod.toggleDevTools();
+                if (!res?.success) toast.error("Не удалось открыть DevTools");
+              } catch {
+                toast.error("Не удалось открыть DevTools");
+              }
+            }}
+          >
+            Открыть DevTools
+          </Button>
+        </div>
+        <span className="text-muted-foreground text-xs">
+          Работает и на Wayland. Лог ошибок: файл cozy-renderer.log в папке данных приложения.
+        </span>
       </div>
     </ExpandableCard>
   );

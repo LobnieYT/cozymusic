@@ -1,5 +1,8 @@
 import { initFetchInterceptor } from "~/mod/features/utils";
 
+// Перехват ошибок рендера в файл — первым делом, до всего остального
+import "./features/error-log";
+
 // Инициализация мода utils для перехвата запросов к yandex api
 initFetchInterceptor();
 

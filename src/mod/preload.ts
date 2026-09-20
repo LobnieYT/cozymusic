@@ -16,6 +16,8 @@ electron.contextBridge.exposeInMainWorld("yandexMusicMod", {
   axios: (config: any) => electron.ipcRenderer.invoke("yandexMusicMod.axios", config),
   forceQuit: () => electron.ipcRenderer.invoke("yandexMusicMod.forceQuit"),
   getEnv: () => electron.ipcRenderer.invoke("yandexMusicMod.getEnv"),
+  toggleDevTools: () => electron.ipcRenderer.invoke("yandexMusicMod.toggleDevTools"),
+  logRenderer: (text: string) => electron.ipcRenderer.invoke("yandexMusicMod.logRenderer", { text }),
   setWindowOpacity: (value: number) => electron.ipcRenderer.invoke("yandexMusicMod.setWindowOpacity", value),
   refreshShortcuts: () => electron.ipcRenderer.invoke("yandexMusicMod.refreshShortcuts"),
   runMediaAction: (action: string) => electron.ipcRenderer.invoke("yandexMusicMod.runMediaAction", action),

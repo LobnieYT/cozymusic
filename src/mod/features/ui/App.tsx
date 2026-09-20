@@ -26,6 +26,7 @@ import { PluginsDev } from "@ui/components/plugins";
 import { NewYearSnowfallAnimation } from "@ui/components/snowfall-animation";
 
 import { Button } from "./components/ui/button";
+import { ErrorBoundary } from "./components/ui/error-boundary";
 import { ExpandedByDefaultContext } from "./components/ui/expandable-card";
 
 import logo from "@ui/assets/cozy-logo.png?inline";
@@ -146,7 +147,6 @@ export default function App() {
         if (snap) return snap;
         return assets.find((a) => a.name.endsWith(".flatpak")) || assets[0];
       };
-      void names;
       const asset = pickAsset();
       if (!asset) {
         toast.error("Подходящий файл обновления не найден");
@@ -249,6 +249,7 @@ export default function App() {
       <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
         {mountNode && createPortal(sheetTrigger, mountNode)}
         <SheetContent side="center" className="w-full" onOpenAutoFocus={(e) => e.preventDefault()}>
+          <ErrorBoundary label="Меню CozyMusic">
           <div
             id="header"
             className="flex items-center justify-between px-4"
@@ -463,6 +464,7 @@ export default function App() {
               Назад
             </Button>
           </div>
+          </ErrorBoundary>
         </SheetContent>
       </Sheet>
     </ThemeProvider>

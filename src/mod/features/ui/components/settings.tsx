@@ -5,11 +5,14 @@ import { getAccountSettings, updateAccountSettings } from "~/mod/features/utils/
 
 import { ExpandableCard } from "@ui/components/ui/expandable-card";
 import { Button } from "@ui/components/ui/button";
+import { Label } from "@ui/components/ui/label";
+import { Switch } from "@ui/components/ui/switch";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@ui/components/ui/tooltip";
 import { toast } from "sonner";
 
 import { AiOutlineExperiment } from "react-icons/ai";
 import { Settings as SettingsIcon } from "lucide-react";
+import { ErrorBoundary } from "@ui/components/ui/error-boundary";
 
 import { MEDIA_BIND_ACTIONS, MEDIA_BIND_DEFAULTS, MEDIA_BINDS_ENABLED_KEY, MEDIA_BIND_KEY } from "~/mod/features/media-binds";
 
@@ -108,6 +111,7 @@ export function Settings() {
 
   return (
     <ExpandableCard title="Настройки" icon={<SettingsIcon className="h-4 w-4" />}>
+      <ErrorBoundary label="Настройки">
       <div className="flex flex-col gap-5 pt-2 px-3">
         <div className="flex items-center gap-3">
           <Switch
@@ -181,6 +185,7 @@ export function Settings() {
           </Tooltip>
         </div>
       </div>
+      </ErrorBoundary>
     </ExpandableCard>
   );
 }
