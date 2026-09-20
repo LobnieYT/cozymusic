@@ -39,5 +39,8 @@ import "./features/plugins";
 // Инициализация кастомных обоев Яндекс Музыки
 import "./features/wallpapers";
 
+// Инициализация глобальных горячих клавиш (исполнение действий)
+import "./features/media-binds";
+
 // Инициализация подмены источника текстов песен (yandex/lrclib/musixmatch)
 import "./features/lyrics";

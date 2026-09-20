@@ -1,5 +1,6 @@
 const electron = require("electron");
 const fs = require("fs");
+const os = require("os");
 const path = require("path");
 const process = require("process");
 const sanitize = require("sanitize-filename");
@@ -322,6 +323,235 @@ electron.ipcMain.handle("yandexMusicMod.setWindowOpacity", async (_ev, value) =>
   } catch (e) {}
   return { success: true, opacity: v };
 });
+
+// ---- Глобальные горячие клавиши (бинды) ----
+const MEDIA_BIND_DEFAULTS = {
+  playPause: "MediaPlayPause",
+  stop: "MediaStop",
+  prev: "MediaPreviousTrack",
+  next: "MediaNextTrack",
+  volUp: "Control+Alt+Up",
+  volDown: "Control+Alt+Down",
+};
+
+function readModSetting(key, fallback) {
+  try {
+    const settings = JSON.parse(fs.readFileSync(settingsFilePath, "utf8") || "{}");
+    const v = settings[key];
+    return v === undefined ? fallback : v;
+  } catch (e) {
+    return fallback;
+  }
+}
+
+function runMediaAction(action) {
+  try {
+    const wins = electron.BrowserWindow.getAllWindows().filter((w) => {
+      try {
+        return !w.isDestroyed();
+      } catch (e) {
+        return false;
+      }
+    });
+    const win = wins[0];
+    if (!win) return false;
+    win.webContents
+      .executeJavaScript(`(window.__cozyMediaAction && window.__cozyMediaAction(${JSON.stringify(action)}))`)
+      .catch(() => {});
+    return true;
+  } catch (e) {
+    return false;
+  }
+}
+
+function refreshGlobalShortcuts() {
+  try {
+    electron.globalShortcut.unregisterAll();
+  } catch (e) {}
+  let enabled = readModSetting("binds/enabled", true);
+  if (!enabled) {
+    console.log("[binds] disabled, shortcuts cleared");
+    return { success: true, registered: [] };
+  }
+  const registered = [];
+  for (const [action, defAcc] of Object.entries(MEDIA_BIND_DEFAULTS)) {
+    const acc = readModSetting(`binds/${action}`, defAcc);
+    if (!acc || typeof acc !== "string") continue;
+    try {
+      const ok = electron.globalShortcut.register(acc, () => runMediaAction(action));
+      if (ok) registered.push({ action, acc });
+      else console.error(`[binds] failed to register ${acc} for ${action}`);
+    } catch (e) {
+      console.error(`[binds] register error ${acc}:`, e.message);
+    }
+  }
+  console.log("[binds] registered:", registered);
+  return { success: true, registered };
+}
+
+electron.ipcMain.handle("yandexMusicMod.getEnv", async () => {
+  try {
+    return {
+      success: true,
+      flatpak: !!process.env.FLATPAK_ID,
+      snap: !!(process.env.SNAP || process.env.SNAP_NAME),
+      platform: process.platform,
+    };
+  } catch (e) {
+    return { success: false };
+  }
+});
+
+electron.ipcMain.handle("yandexMusicMod.refreshShortcuts", async () => refreshGlobalShortcuts());
+electron.ipcMain.handle("yandexMusicMod.runMediaAction", async (_ev, action) => ({ success: runMediaAction(action) }));
+
+// ---- Проверка обновлений CozyMusic (GitHub releases) ----
+function compareVersions(a, b) {
+  const norm = (v) =>
+    String(v || "")
+      .replace(/^v/i, "")
+      .split("-")[0]
+      .split(".")
+      .map((x) => parseInt(x, 10) || 0);
+  const pa = norm(a);
+  const pb = norm(b);
+  for (let i = 0; i < Math.max(pa.length, pb.length); i++) {
+    const da = pa[i] || 0;
+    const db = pb[i] || 0;
+    if (da !== db) return da - db;
+  }
+  return 0;
+}
+
+electron.ipcMain.handle("yandexMusicMod.checkUpdate", async (_ev, currentVersion) => {
+  try {
+    const client = axios.create({ validateStatus: () => true, timeout: 15000 });
+    const response = await client.get("https://api.github.com/repos/LobnieYT/cozymusic/releases/latest", {
+      headers: { Accept: "application/vnd.github+json", "User-Agent": "CozyMusic-updater" },
+    });
+    if (response.status !== 200 || !response.data || !response.data.tag_name) {
+      return { success: false, error: "check_failed" };
+    }
+    const latest = String(response.data.tag_name);
+    const updateAvailable = compareVersions(latest, currentVersion) > 0;
+    return { success: true, current: currentVersion, latest, updateAvailable, assets: (response.data.assets || []).map((a) => ({ name: a.name, size: a.size, url: a.browser_download_url })) };
+  } catch (e) {
+    console.error("[updater] check failed:", e.message);
+    return { success: false, error: "check_failed" };
+  }
+});
+
+electron.ipcMain.handle("yandexMusicMod.installUpdate", async (_ev, assetUrl, assetName) => {
+  try {
+    const os = require("os");
+    const { execFile } = require("child_process");
+    const tmpFile = path.join(os.tmpdir(), `cozymusic-update-${Date.now()}-${path.basename(String(assetName || "update.bin"))}`);
+    console.log("[updater] downloading:", assetUrl);
+    const client = axios.create({ validateStatus: () => true, timeout: 60000, responseType: "stream" });
+    const response = await client.get(assetUrl, { headers: { "User-Agent": "CozyMusic-updater" } });
+    if (response.status !== 200) return { success: false, error: "download_failed" };
+    await new Promise((resolve, reject) => {
+      const out = fs.createWriteStream(tmpFile);
+      response.data.pipe(out);
+      out.on("finish", resolve);
+      out.on("error", reject);
+    });
+
+    const runCmd = (cmd, args) =>
+      new Promise((resolve) => {
+        execFile(cmd, args, { timeout: 300000 }, (err) => resolve({ code: err ? err.code : 0, error: err ? String(err.message).slice(0, 300) : null }));
+      });
+
+    if (process.env.FLATPAK_ID) {
+      const r = await runCmd("flatpak", ["install", "--user", "-y", tmpFile]);
+      try { fs.rmSync(tmpFile, { force: true }); } catch (e) {}
+      if (r.code === 0) return { success: true, method: "flatpak" };
+      return { success: false, error: r.error || "install_failed" };
+    }
+    if (process.env.SNAP || process.env.SNAP_NAME) {
+      const r = await runCmd("pkexec", ["snap", "install", "--dangerous", "--classic", tmpFile]);
+      try { fs.rmSync(tmpFile, { force: true }); } catch (e) {}
+      if (r.code === 0) return { success: true, method: "snap" };
+      return { success: false, needManual: true, command: `sudo snap install --dangerous --classic "${tmpFile}"` };
+    }
+    return { success: false, needManual: true, file: tmpFile };
+  } catch (e) {
+    console.error("[updater] install failed:", e.message);
+    return { success: false, error: "install_failed" };
+  }
+});
+
+electron.ipcMain.handle("yandexMusicMod.restartApp", async () => {
+  try {
+    electron.app.relaunch();
+    electron.app.exit(0);
+  } catch (e) {}
+  return { success: true };
+});
+
+// ---- Автозапуск (Linux: .desktop в ~/.config/autostart) ----
+function getAutostartFile() {
+  try {
+    const dir = path.join(os.homedir(), ".config", "autostart");
+    return { dir, file: path.join(dir, "cozymusic-autostart.desktop") };
+  } catch (e) {
+    return { dir: null, file: null };
+  }
+}
+
+function getAutostartExec() {
+  if (process.env.FLATPAK_ID) return "flatpak run --user org.cozymusic.player";
+  if (process.env.SNAP || process.env.SNAP_NAME) return "/snap/bin/cozymusic-player";
+  try {
+    return process.execPath;
+  } catch (e) {
+    return "";
+  }
+}
+
+function applyAutostart(enabled) {
+  try {
+    const { dir, file } = getAutostartFile();
+    if (!dir || !file) return { success: false };
+    if (enabled) {
+      fs.mkdirSync(dir, { recursive: true });
+      const execLine = getAutostartExec();
+      if (!execLine) return { success: false };
+      fs.writeFileSync(
+        file,
+        `[Desktop Entry]\nType=Application\nName=CozyMusic\nComment=CozyMusic autostart\nExec=${execLine} %U\nTerminal=false\nX-GNOME-Autostart-enabled=true\nNoDisplay=false\n`,
+      );
+    } else {
+      fs.rmSync(file, { force: true });
+    }
+    return { success: true, enabled: !!enabled };
+  } catch (e) {
+    return { success: false, error: String(e) };
+  }
+}
+
+electron.ipcMain.handle("yandexMusicMod.setAutostart", async (_ev, enabled) => applyAutostart(!!enabled));
+electron.ipcMain.handle("yandexMusicMod.getAutostart", async () => {
+  try {
+    const { file } = getAutostartFile();
+    return { success: true, enabled: !!(file && fs.existsSync(file)) };
+  } catch (e) {
+    return { success: false, enabled: false };
+  }
+});
+
+// применить автозапуск и шорткаты из сохранённых настроек.
+// globalShortcut работает только после app.ready — откладываем.
+function scheduleShortcutRefresh() {
+  try {
+    if (electron.app.isReady()) refreshGlobalShortcuts();
+    else electron.app.whenReady().then(() => refreshGlobalShortcuts()).catch(() => {});
+  } catch (e) {}
+}
+try {
+  applyAutostart(readModSetting("autostart/enabled", false));
+} catch (e) {}
+scheduleShortcutRefresh();
 
 // window API - пользовательские шрифты (файлы в userData/cozy-fonts)
 const fontsDir = path.join(appFolder, "cozy-fonts");

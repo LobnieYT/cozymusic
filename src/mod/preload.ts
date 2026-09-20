@@ -15,7 +15,16 @@ electron.contextBridge.exposeInMainWorld("yandexMusicMod", {
   openFolder: (folderPath: string) => electron.ipcRenderer.invoke("yandexMusicMod.openFolder", folderPath),
   axios: (config: any) => electron.ipcRenderer.invoke("yandexMusicMod.axios", config),
   forceQuit: () => electron.ipcRenderer.invoke("yandexMusicMod.forceQuit"),
+  getEnv: () => electron.ipcRenderer.invoke("yandexMusicMod.getEnv"),
   setWindowOpacity: (value: number) => electron.ipcRenderer.invoke("yandexMusicMod.setWindowOpacity", value),
+  refreshShortcuts: () => electron.ipcRenderer.invoke("yandexMusicMod.refreshShortcuts"),
+  runMediaAction: (action: string) => electron.ipcRenderer.invoke("yandexMusicMod.runMediaAction", action),
+  checkUpdate: (currentVersion: string) => electron.ipcRenderer.invoke("yandexMusicMod.checkUpdate", currentVersion),
+  installUpdate: (assetUrl: string, assetName: string) =>
+    electron.ipcRenderer.invoke("yandexMusicMod.installUpdate", assetUrl, assetName),
+  restartApp: () => electron.ipcRenderer.invoke("yandexMusicMod.restartApp"),
+  setAutostart: (enabled: boolean) => electron.ipcRenderer.invoke("yandexMusicMod.setAutostart", enabled),
+  getAutostart: () => electron.ipcRenderer.invoke("yandexMusicMod.getAutostart"),
   listUserFonts: () => electron.ipcRenderer.invoke("yandexMusicMod.listUserFonts"),
   saveUserFont: (payload: { name: string; dataBase64: string }) =>
     electron.ipcRenderer.invoke("yandexMusicMod.saveUserFont", payload),

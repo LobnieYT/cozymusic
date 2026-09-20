@@ -6,6 +6,7 @@ import { ScrollArea } from "@ui/components/ui/scroll-area";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { Toaster } from "@ui/components/ui/sonner";
+import { toast } from "sonner";
 
 import { Playground } from "@ui/components/playground";
 import { IPChecker } from "@ui/components/ip-checker";
@@ -32,7 +33,7 @@ import donateLogo from "@ui/assets/donate-logo.png?inline";
 import discordBg from "@ui/assets/discord-bg.png?inline";
 
 import { FaDiscord, FaGithub } from "react-icons/fa";
-import { Power, Download, Volume2, Heart, MicVocal, Palette, Type, Scaling, Gamepad2, Settings as SettingsIcon, Wrench, FlaskConical, Puzzle } from "lucide-react";
+import { Power, Download, Volume2, Heart, MicVocal, Palette, Type, Scaling, Gamepad2, Settings as SettingsIcon, Wrench, FlaskConical, Puzzle, RefreshCw } from "lucide-react";
 
 const IS_DEV = false;
 const DISCORD_INVITE_URL = "https://discord.gg/mS5WJfWEht";
@@ -94,6 +95,81 @@ export default function App() {
   const [isSheetOpen, setIsSheetOpen] = useState(IS_DEV);
   const [devtoolsEnabled, setDevtoolsEnabled] = useState(false);
   const [selected, setSelected] = useState<MenuKey>("downloader");
+  const [updateAvailable, setUpdateAvailable] = useState(false);
+  const [checkingUpdate, setCheckingUpdate] = useState(false);
+  const [isFlatpakEnv, setIsFlatpakEnv] = useState(false);
+
+  async function queryUpdateInfo() {
+    try {
+      const res = await (window as any).yandexMusicMod.checkUpdate(import.meta.env.VITE_MOD_VERSION);
+      if (res?.success && res.updateAvailable) {
+        setUpdateAvailable(true);
+        return res;
+      }
+      return res;
+    } catch {
+      return { success: false };
+    }
+  }
+
+  // тихая проверка при старте меню — только выставляет бейдж
+  useEffect(() => {
+    queryUpdateInfo();
+    (async () => {
+      try {
+        const env = await (window as any).yandexMusicMod.getEnv();
+        if (env?.success) setIsFlatpakEnv(!!env.flatpak);
+      } catch {}
+    })();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  async function handleUpdateClick() {
+    if (checkingUpdate) return;
+    setCheckingUpdate(true);
+    try {
+      const info: any = await queryUpdateInfo();
+      if (!info?.success) {
+        toast.error("Не удалось проверить обновления");
+        return;
+      }
+      if (!info.updateAvailable) {
+        toast.success("У вас уже последняя версия :)");
+        return;
+      }
+      const assets: any[] = info.assets || [];
+      const pickAsset = (): any => {
+        if (isFlatpakEnv) {
+          return assets.find((a) => a.name.endsWith(".flatpak")) || assets[0];
+        }
+        const snap = assets.find((a) => a.name.includes("_amd64.snap"));
+        if (snap) return snap;
+        return assets.find((a) => a.name.endsWith(".flatpak")) || assets[0];
+      };
+      void names;
+      const asset = pickAsset();
+      if (!asset) {
+        toast.error("Подходящий файл обновления не найден");
+        return;
+      }
+      const toastId = toast.loading(`Скачиваю ${info.latest}…`);
+      const res: any = await (window as any).yandexMusicMod.installUpdate(asset.url, asset.name);
+      toast.dismiss(toastId);
+      if (res?.success) {
+        toast.success("Обновление установлено! Перезапускаю…");
+        setTimeout(() => (window as any).yandexMusicMod.restartApp(), 1500);
+      } else if (res?.needManual) {
+        toast.error("Нужна ручная установка", {
+          description: res.command || res.file || "",
+          duration: 10000,
+        });
+      } else {
+        toast.error("Не удалось установить обновление");
+      }
+    } finally {
+      setCheckingUpdate(false);
+    }
+  }
 
   useEffect(() => {
     (async () => {
@@ -202,8 +278,13 @@ export default function App() {
                   }}
                 />
                 <div className="flex flex-col leading-tight">
-                  <span className="bg-gradient-to-r from-violet-100 via-fuchsia-200 to-violet-100 bg-clip-text text-lg font-black tracking-wider text-transparent drop-shadow-[0_0_12px_rgba(217,70,239,0.35)]">
+                  <span className="flex items-center gap-2 bg-gradient-to-r from-violet-100 via-fuchsia-200 to-violet-100 bg-clip-text text-lg font-black tracking-wider text-transparent drop-shadow-[0_0_12px_rgba(217,70,239,0.35)]">
                     CozyMusic
+                    {updateAvailable && (
+                      <span className="animate-pulse rounded-full border border-emerald-300/50 bg-emerald-400/15 px-2 py-px text-[10px] font-bold whitespace-nowrap text-emerald-200">
+                        Вышло новое обновление!
+                      </span>
+                    )}
                   </span>
                   <span className="mt-0.5 flex items-center gap-1.5">
                     <span className="rounded-full border border-fuchsia-300/40 bg-fuchsia-400/15 px-2 py-px text-[10px] font-bold text-fuchsia-100">
@@ -215,6 +296,26 @@ export default function App() {
               </div>
 
               <div className="flex items-center gap-2">
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="relative border-emerald-300/30 bg-emerald-400/10 backdrop-blur hover:bg-emerald-400/25"
+                      onClick={handleUpdateClick}
+                      disabled={checkingUpdate}
+                    >
+                      <RefreshCw className={`text-foreground h-[1.3rem]! w-[1.3rem]! ${checkingUpdate ? "animate-spin" : ""}`} />
+                      {updateAvailable && (
+                        <span className="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-emerald-400 shadow-[0_0_6px_2px_rgba(52,211,153,0.7)]" />
+                      )}
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">
+                    <p>Обновить CozyMusic</p>
+                  </TooltipContent>
+                </Tooltip>
+
                 <Tooltip>
                   <TooltipTrigger>
                     <Button
