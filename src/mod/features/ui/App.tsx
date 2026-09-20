@@ -99,6 +99,7 @@ export default function App() {
   const [updateAvailable, setUpdateAvailable] = useState(false);
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [isFlatpakEnv, setIsFlatpakEnv] = useState(false);
+  const [isWinEnv, setIsWinEnv] = useState(false);
 
   async function queryUpdateInfo() {
     try {
@@ -119,7 +120,10 @@ export default function App() {
     (async () => {
       try {
         const env = await (window as any).yandexMusicMod.getEnv();
-        if (env?.success) setIsFlatpakEnv(!!env.flatpak);
+        if (env?.success) {
+          setIsFlatpakEnv(!!env.flatpak);
+          setIsWinEnv(env.platform === "win32");
+        }
       } catch {}
     })();
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -140,6 +144,9 @@ export default function App() {
       }
       const assets: any[] = info.assets || [];
       const pickAsset = (): any => {
+        if (isWinEnv) {
+          return assets.find((a) => a.name.endsWith(".exe")) || assets[0];
+        }
         if (isFlatpakEnv) {
           return assets.find((a) => a.name.endsWith(".flatpak")) || assets[0];
         }
@@ -155,6 +162,10 @@ export default function App() {
       const toastId = toast.loading(`Скачиваю ${info.latest}…`);
       const res: any = await (window as any).yandexMusicMod.installUpdate(asset.url, asset.name);
       toast.dismiss(toastId);
+      if (res?.success && res?.method === "win-installer") {
+        toast.success("Установщик запущен! Приложение закроется…");
+        return;
+      }
       if (res?.success) {
         toast.success("Обновление установлено! Перезапускаю…");
         setTimeout(() => (window as any).yandexMusicMod.restartApp(), 1500);

@@ -507,6 +507,23 @@ electron.ipcMain.handle("yandexMusicMod.installUpdate", async (_ev, assetUrl, as
       if (r.code === 0) return { success: true, method: "flatpak" };
       return { success: false, error: r.error || "install_failed" };
     }
+    if (process.platform === "win32") {
+      // Windows: скачанный Setup.exe запускаем (мастер установки),
+      // текущее приложение закрываем, временный файл чистит сам инсталлер/ОС
+      try {
+        const { spawn } = require("child_process");
+        const child = spawn(tmpFile, [], { detached: true, stdio: "ignore" });
+        if (child && child.unref) child.unref();
+      } catch (e) {
+        return { success: false, error: "spawn_failed" };
+      }
+      setTimeout(() => {
+        try {
+          electron.app.quit();
+        } catch (e) {}
+      }, 1500);
+      return { success: true, method: "win-installer" };
+    }
     if (process.env.SNAP || process.env.SNAP_NAME) {
       const r = await runCmd("pkexec", ["snap", "install", "--dangerous", "--classic", tmpFile]);
       try { fs.rmSync(tmpFile, { force: true }); } catch (e) {}
