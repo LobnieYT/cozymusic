@@ -592,6 +592,24 @@ try {
 } catch (e) {}
 scheduleShortcutRefresh();
 
+// Чистое завершение по SIGTERM/SIGINT: грязный выход портит
+// Chromium-хранилища (куки, localStorage, IndexedDB) — отсюда слетевший
+// вход, громкость и музыка "через раз". SIGKILL обработать нельзя,
+// поэтому smoke-тесты обязаны завершать приложение только так.
+try {
+  const gracefulExit = () => {
+    try {
+      electron.app.quit();
+    } catch (e) {
+      try {
+        process.exit(0);
+      } catch (_) {}
+    }
+  };
+  process.on("SIGTERM", gracefulExit);
+  process.on("SIGINT", gracefulExit);
+} catch (e) {}
+
 // window API - пользовательские шрифты (файлы в userData/cozy-fonts)
 const fontsDir = path.join(appFolder, "cozy-fonts");
 const FONT_MIME = { ".ttf": "font/ttf", ".otf": "font/otf", ".woff": "font/woff", ".woff2": "font/woff2" };
