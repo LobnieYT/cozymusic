@@ -129,6 +129,18 @@ export default function App() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  // Платформа тремя независимыми способами (IPC может отсутствовать в старых сборках)
+  const detectWin = (): boolean => {
+    if (isWinEnv) return true;
+    try {
+      const p = (navigator as any).platform || (navigator as any).userAgentData?.platform || "";
+      if (/win/i.test(p)) return true;
+      const ua = navigator.userAgent || "";
+      if (/windows/i.test(ua)) return true;
+    } catch {}
+    return false;
+  };
+
   async function handleUpdateClick() {
     if (checkingUpdate) return;
     setCheckingUpdate(true);
@@ -143,18 +155,25 @@ export default function App() {
         return;
       }
       const assets: any[] = info.assets || [];
+      const isWin = detectWin();
+      const lower = (s: string) => String(s || "").toLowerCase();
+      const isForeign = (name: string) => {
+        // файлы чужой платформы — никогда не качаем
+        if (isWin) return /\.(snap|flatpak|deb|rpm|appimage|tar\.gz|zip)$/i.test(name);
+        return /\.(exe|msi)$/i.test(name);
+      };
       const pickAsset = (): any => {
-        if (isWinEnv) {
-          return assets.find((a) => a.name.endsWith(".exe")) || assets[0];
-        }
-        if (isFlatpakEnv) {
-          return assets.find((a) => a.name.endsWith(".flatpak")) || assets[0];
-        }
-        const snap = assets.find((a) => a.name.includes("_amd64.snap"));
-        if (snap) return snap;
-        return assets.find((a) => a.name.endsWith(".flatpak")) || assets[0];
+        const own = assets.filter((a) => !isForeign(a.name));
+        if (isWin) return own.find((a) => lower(a.name).endsWith(".exe")) || null;
+        if (isFlatpakEnv) return own.find((a) => lower(a.name).endsWith(".flatpak")) || null;
+        return (
+          own.find((a) => lower(a.name).includes("_amd64.snap")) ||
+          own.find((a) => lower(a.name).endsWith(".flatpak")) ||
+          null
+        );
       };
       const asset = pickAsset();
+      console.log(`[updater] platform win=${isWin} flatpak=${isFlatpakEnv}, picked:`, asset?.name);
       if (!asset) {
         toast.error("Подходящий файл обновления не найден");
         return;

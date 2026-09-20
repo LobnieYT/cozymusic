@@ -482,6 +482,11 @@ electron.ipcMain.handle("yandexMusicMod.checkUpdate", async (_ev, currentVersion
 
 electron.ipcMain.handle("yandexMusicMod.installUpdate", async (_ev, assetUrl, assetName) => {
   try {
+    const name = String(assetName || "").toLowerCase();
+    const isWin = process.platform === "win32";
+    // защита от перепутанного ассета: чужой формат даже не качаем
+    if (isWin && !name.endsWith(".exe")) return { success: false, error: "wrong_asset" };
+    if (!isWin && /\.(exe|msi)$/.test(name)) return { success: false, error: "wrong_asset" };
     const os = require("os");
     const { execFile } = require("child_process");
     const tmpFile = path.join(os.tmpdir(), `cozymusic-update-${Date.now()}-${path.basename(String(assetName || "update.bin"))}`);
