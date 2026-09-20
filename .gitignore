@@ -1,0 +1,14 @@
+node_modules/
+src/mod/dist/
+release/work/
+release/flatpak/files/
+release/flatpak/repo/
+release/arch/
+*.snap
+*.flatpak
+*.pkg.tar.zst
+*.deb
+*.asar
+yandexmusic-app.tar
+stage/
+.versions/
