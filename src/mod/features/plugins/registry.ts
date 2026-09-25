@@ -16,6 +16,8 @@ export interface PluginMeta {
   metaUrl?: string;
   /** id для определения конфликта с обоями мода */
   isCustomBackground?: boolean;
+  /** токен для приватных репозиториев (шлётся как Bearer при загрузке файлов) */
+  token?: string;
 }
 
 const raw = (repo: string, branch: string, file: string) =>
@@ -168,5 +170,17 @@ export const PLUGIN_REGISTRY: PluginMeta[] = [
     styleUrl: raw("Maks1mio/Lyrics-Translation", "main", "style.css"),
     handlesUrl: raw("Maks1mio/Lyrics-Translation", "main", "handleEvents.json"),
     metaUrl: raw("Maks1mio/Lyrics-Translation", "main", "metadata.json"),
+  },
+  {
+    id: "anticensor",
+    settingsName: "AntiCensor",
+    name: "AntiCensor",
+    author: "LobnieYT",
+    description:
+      "Подменивает заблюренные треки автоматически и позволяет это делать вручную через контекстное меню. Форк проекта \"FckCensor\"",
+    repo: "https://github.com/LobnieYT/AntiCensor",
+    scriptUrl: raw("LobnieYT/AntiCensor", "main", "script.js"),
+    metaUrl: raw("LobnieYT/AntiCensor", "main", "metadata.json"),
+    token: "[REDACTED]",
   },
 ];

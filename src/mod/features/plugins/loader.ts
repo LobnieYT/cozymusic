@@ -5,16 +5,19 @@ import {
   type PluginSettingsMap,
 } from "./pulsesync-shim";
 import { PLUGIN_REGISTRY, type PluginMeta } from "./registry";
+import { resolvePluginMeta } from "./custom";
 
 export const PLUGINS_ENABLED_KEY = "plugins/enabled";
 
 const loaded = new Map<string, () => void>();
 
-async function fetchText(url: string, timeoutMs = 15000): Promise<string> {
+async function fetchText(url: string, timeoutMs = 15000, token?: string): Promise<string> {
   const ctrl = new AbortController();
   const timer = setTimeout(() => ctrl.abort(), timeoutMs);
   try {
-    const res = await fetch(url, { signal: ctrl.signal });
+    const headers: Record<string, string> = {};
+    if (token) headers["Authorization"] = `Bearer ${token}`;
+    const res = await fetch(url, { signal: ctrl.signal, headers });
     if (!res.ok) throw new Error(`http_${res.status}`);
     return await res.text();
   } finally {
@@ -55,7 +58,7 @@ export interface PluginHandleItem {
 export async function fetchPluginMeta(meta: PluginMeta): Promise<Partial<PluginMeta>> {
   try {
     if (!meta.metaUrl) return {};
-    const raw = await fetchText(meta.metaUrl);
+    const raw = await fetchText(meta.metaUrl, 15000, meta.token);
     const json = JSON.parse(raw);
     return {
       name: json.name || meta.name,
@@ -70,7 +73,7 @@ export async function fetchPluginMeta(meta: PluginMeta): Promise<Partial<PluginM
 export async function fetchPluginHandles(meta: PluginMeta): Promise<PluginHandles | null> {
   try {
     if (!meta.handlesUrl) return null;
-    return JSON.parse(await fetchText(meta.handlesUrl)) as PluginHandles;
+    return JSON.parse(await fetchText(meta.handlesUrl, 15000, meta.token)) as PluginHandles;
   } catch {
     return null;
   }
@@ -97,8 +100,8 @@ export function defaultsFromHandles(handles: PluginHandles | null): PluginSettin
 export async function enablePlugin(meta: PluginMeta): Promise<void> {
   if (loaded.has(meta.id)) return;
   const [code, css] = await Promise.all([
-    fetchText(meta.scriptUrl),
-    meta.styleUrl ? fetchText(meta.styleUrl).catch(() => null) : Promise.resolve(null),
+    fetchText(meta.scriptUrl, 15000, meta.token),
+    meta.styleUrl ? fetchText(meta.styleUrl, 15000, meta.token).catch(() => null) : Promise.resolve(null),
   ]);
   if (css) injectStyle(meta.id, css);
   const el = document.createElement("script");
@@ -154,7 +157,7 @@ export async function initPluginsEngine() {
     } catch {}
   }
   for (const id of enabled) {
-    const meta = PLUGIN_REGISTRY.find((m) => m.id === id);
+    const meta = await resolvePluginMeta(id, PLUGIN_REGISTRY);
     if (!meta) continue;
     try {
       await enablePlugin(meta);

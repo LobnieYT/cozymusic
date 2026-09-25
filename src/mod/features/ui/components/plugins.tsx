@@ -125,7 +125,7 @@ function PluginCard({ meta, enabled, onToggle }: { meta: PluginMeta; enabled: bo
       <div className="flex flex-col gap-3 pt-2 px-3">
         <div className="flex items-center justify-between gap-3">
           <div className="flex flex-col gap-0.5">
-            <span className="text-sm">{live.description || meta.description}</span>
+            <span className="text-sm">{meta.description || live.description}</span>
           </div>
           <Switch
             id={`plugin-toggle-${meta.id}`}
@@ -288,6 +288,15 @@ export function PluginsDev() {
       // Взаимоблокировка с обоями мода
       if (meta.isCustomBackground && (await isWallpapersEnabled())) {
         toast.error('Выключите функцию "обои на фоне Яндекс Музыки"');
+        return;
+      }
+      // AntiCensor и FckCensor хукуют одно и то же — только один за раз
+      if (id === "fck-censor" && enabledIds.includes("anticensor")) {
+        toast.error('Выключите AntiCensor, чтобы использовать FckCensor!');
+        return;
+      }
+      if (id === "anticensor" && enabledIds.includes("fck-censor")) {
+        toast.error('Выключите FckCensor, чтобы использовать AntiCensor!');
         return;
       }
       try {
