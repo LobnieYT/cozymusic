@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import { ExpandableCard } from "@ui/components/ui/expandable-card";
 import { Label } from "@ui/components/ui/label";
@@ -28,16 +28,16 @@ import { PLUGIN_REGISTRY } from "~/mod/features/plugins/registry";
 export function Devtools() {
   const [devtoolsEnabled, setDevtoolsEnabled] = useState(false);
   const [systemToolbarEnabled, setSystemToolbarEnabled] = useState(false);
-  const [customUrl, setCustomUrl] = useState("");
   const [customName, setCustomName] = useState("");
   const [custom, setCustom] = useState<CustomPlugin | null>(null);
   const [customEnabled, setCustomEnabled] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
 
   const refreshCustom = async () => {
     try {
       const c = await getCustomPlugin();
       setCustom(c);
-      if (c) setCustomUrl(c.url);
+      if (c) setCustomName(c.name);
       const ids = await getEnabledPluginIds();
       setCustomEnabled(ids.includes(CUSTOM_PLUGIN_ID));
     } catch {}
@@ -51,20 +51,32 @@ export function Devtools() {
     })();
   }, []);
 
-  const saveCustom = async () => {
-    const url = customUrl.trim();
-    if (!url) {
-      toast.error("Вставь URL .js файла плагина");
+  const saveCustom = async (files: FileList | null) => {
+    if (!files || files.length === 0) return;
+    const file = files[0]!;
+    if (!/\.js$/i.test(file.name)) {
+      toast.error("Нужен .js файл плагина");
       return;
     }
-    if (!/^https?:\/\//i.test(url) && !url.startsWith("data:text/javascript")) {
-      toast.error("Нужен http(s) URL или data: URL");
+    if (file.size > 2 * 1024 * 1024) {
+      toast.error("Файл слишком большой (макс 2 МБ)");
       return;
     }
-    const plugin: CustomPlugin = { name: customName.trim() || "Свой плагин", url };
-    await setCustomPlugin(plugin);
-    setCustom(plugin);
-    toast.success("Свой плагин сохранён");
+    try {
+      const code = await file.text();
+      if (!code.trim()) {
+        toast.error("Файл пустой");
+        return;
+      }
+      const plugin: CustomPlugin = { name: customName.trim() || file.name.replace(/\.js$/i, ""), code };
+      await setCustomPlugin(plugin);
+      setCustom(plugin);
+      toast.success("Свой плагин сохранён локально");
+    } catch (e) {
+      console.error("[plugins] custom save failed:", e);
+      toast.error("Не удалось прочитать файл");
+    }
+    if (fileRef.current) fileRef.current.value = "";
   };
 
   const toggleCustom = async (next: boolean) => {
@@ -97,7 +109,6 @@ export function Devtools() {
     await setCustomPlugin(null);
     setCustom(null);
     setCustomEnabled(false);
-    setCustomUrl("");
     toast.success("Свой плагин удалён");
   };
 
@@ -138,20 +149,22 @@ export function Devtools() {
         </Alert>
 
         <div className="flex flex-col gap-2 rounded-lg border p-2">
-          <Label className="font-semibold">Свой плагин (.js по URL)</Label>
+          <Label className="font-semibold">Свой плагин (файл с компьютера)</Label>
           <Input
             value={customName}
             onChange={(e) => setCustomName(e.target.value)}
             placeholder="Название (необязательно)"
           />
-          <Input
-            value={customUrl}
-            onChange={(e) => setCustomUrl(e.target.value)}
-            placeholder="https://…/plugin.js"
+          <input
+            ref={fileRef}
+            type="file"
+            accept=".js"
+            className="hidden"
+            onChange={(e) => saveCustom(e.target.files)}
           />
           <div className="flex gap-2">
-            <Button variant="outline" className="flex-1" onClick={saveCustom}>
-              Сохранить
+            <Button variant="outline" className="flex-1" onClick={() => fileRef.current?.click()}>
+              Выбрать .js файл
             </Button>
             {custom && (
               <Button variant="outline" onClick={deleteCustom}>

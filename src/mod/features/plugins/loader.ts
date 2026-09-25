@@ -5,7 +5,7 @@ import {
   type PluginSettingsMap,
 } from "./pulsesync-shim";
 import { PLUGIN_REGISTRY, type PluginMeta } from "./registry";
-import { resolvePluginMeta } from "./custom";
+import { resolvePluginMeta, fetchCustomCode, CUSTOM_PLUGIN_ID } from "./custom";
 
 export const PLUGINS_ENABLED_KEY = "plugins/enabled";
 
@@ -99,10 +99,15 @@ export function defaultsFromHandles(handles: PluginHandles | null): PluginSettin
 
 export async function enablePlugin(meta: PluginMeta): Promise<void> {
   if (loaded.has(meta.id)) return;
-  const [code, css] = await Promise.all([
-    fetchText(meta.scriptUrl, 15000, meta.token),
-    meta.styleUrl ? fetchText(meta.styleUrl, 15000, meta.token).catch(() => null) : Promise.resolve(null),
-  ]);
+  // свой плагин: код берётся из локального хранилища, сеть не используется
+  const code =
+    meta.id === CUSTOM_PLUGIN_ID ? await fetchCustomCode() : await fetchText(meta.scriptUrl, 15000, meta.token);
+  const css =
+    meta.id === CUSTOM_PLUGIN_ID
+      ? null
+      : meta.styleUrl
+        ? await fetchText(meta.styleUrl, 15000, meta.token).catch(() => null)
+        : null;
   if (css) injectStyle(meta.id, css);
   const el = document.createElement("script");
   el.id = `cozy-plugin-script-${meta.id}`;
