@@ -1,4 +1,8 @@
 import "./media-binds";
+import { initMouseBinds } from "./mouse-binds";
+
+// Кнопки мыши обрабатываются в странице (globalShortcut их не умеет)
+initMouseBinds();
 
 // Глобальные горячие клавиши: исполнение на стороне страницы,
 // регистрация — в main-процессе (globalShortcut).

@@ -173,14 +173,12 @@ export const PLUGIN_REGISTRY: PluginMeta[] = [
   },
   {
     id: "anticensor",
-    settingsName: "AntiCensor",
-    name: "AntiCensor",
-    author: "LobnieYT",
-    description:
-      "Подменивает заблюренные треки автоматически и позволяет это делать вручную через контекстное меню. Форк проекта \"FckCensor\"",
-    repo: "https://github.com/LobnieYT/AntiCensor",
-    scriptUrl: raw("LobnieYT/AntiCensor", "main", "script.js"),
-    metaUrl: raw("LobnieYT/AntiCensor", "main", "metadata.json"),
-    token: "[REDACTED]",
+    settingsName: "CensorAbuse",
+    name: "CensorAbuse",
+    author: "Lobnie",
+    description: "Снимает ограничения с треков полностью: плеер играет их как неудалённые.",
+    repo: "https://github.com/LobnieYT/CensorAbuse",
+    scriptUrl: raw("LobnieYT/CensorAbuse", "main", "script.js"),
+    metaUrl: raw("LobnieYT/CensorAbuse", "main", "metadata.json"),
   },
 ];

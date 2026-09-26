@@ -374,15 +374,19 @@ function refreshGlobalShortcuts() {
     return { success: true, registered: [] };
   }
   const registered = [];
+  const isMouseAcc = (acc) => typeof acc === "string" && acc.startsWith("Mouse:");
   for (const [action, defAcc] of Object.entries(MEDIA_BIND_DEFAULTS)) {
-    const acc = readModSetting(`binds/${action}`, defAcc);
-    if (!acc || typeof acc !== "string") continue;
-    try {
-      const ok = electron.globalShortcut.register(acc, () => runMediaAction(action));
-      if (ok) registered.push({ action, acc });
-      else console.error(`[binds] failed to register ${acc} for ${action}`);
-    } catch (e) {
-      console.error(`[binds] register error ${acc}:`, e.message);
+    // два слота на действие: binds/{id} и binds/{id}#2; Mouse:* исполняются в странице
+    const slots = [readModSetting(`binds/${action}`, defAcc), readModSetting(`binds/${action}#2`, "")];
+    for (const acc of slots) {
+      if (!acc || typeof acc !== "string" || isMouseAcc(acc)) continue;
+      try {
+        const ok = electron.globalShortcut.register(acc, () => runMediaAction(action));
+        if (ok) registered.push({ action, acc });
+        else console.error(`[binds] failed to register ${acc} for ${action}`);
+      } catch (e) {
+        console.error(`[binds] register error ${acc}:`, e.message);
+      }
     }
   }
   console.log("[binds] registered:", registered);
@@ -572,6 +576,11 @@ function getAutostartExec() {
 
 function applyAutostart(enabled) {
   try {
+    // Windows: штатный механизм Electron (ветка реестра Run)
+    if (process.platform === "win32") {
+      electron.app.setLoginItemSettings({ openAtLogin: !!enabled, path: process.execPath });
+      return { success: true, enabled: !!enabled };
+    }
     const { dir, file } = getAutostartFile();
     if (!dir || !file) return { success: false };
     if (enabled) {
@@ -594,6 +603,10 @@ function applyAutostart(enabled) {
 electron.ipcMain.handle("yandexMusicMod.setAutostart", async (_ev, enabled) => applyAutostart(!!enabled));
 electron.ipcMain.handle("yandexMusicMod.getAutostart", async () => {
   try {
+    if (process.platform === "win32") {
+      const s = electron.app.getLoginItemSettings();
+      return { success: true, enabled: !!s.openAtLogin };
+    }
     const { file } = getAutostartFile();
     return { success: true, enabled: !!(file && fs.existsSync(file)) };
   } catch (e) {

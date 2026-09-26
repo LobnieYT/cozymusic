@@ -290,13 +290,13 @@ export function PluginsDev() {
         toast.error('Выключите функцию "обои на фоне Яндекс Музыки"');
         return;
       }
-      // AntiCensor и FckCensor хукуют одно и то же — только один за раз
+      // CensorAbuse и FckCensor хукуют одно и то же — только один за раз
       if (id === "fck-censor" && enabledIds.includes("anticensor")) {
-        toast.error('Выключите AntiCensor, чтобы использовать FckCensor!');
+        toast.error('Выключите CensorAbuse, чтобы использовать FckCensor!');
         return;
       }
       if (id === "anticensor" && enabledIds.includes("fck-censor")) {
-        toast.error('Выключите FckCensor, чтобы использовать AntiCensor!');
+        toast.error('Выключите FckCensor, чтобы использовать CensorAbuse!');
         return;
       }
       try {

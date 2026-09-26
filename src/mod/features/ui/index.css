@@ -219,3 +219,10 @@ div[class*="PageHeaderArtist_donateControl__"] {
   font-weight: 800;
   letter-spacing: 0.04em;
 }
+
+/* Old Home UI: подавляем всплывающее окно «Настройка интерфейса»
+   (собственный warning-overlay плагина, всплывает когда он
+   временно не находит PLAYERBAR_DESKTOP). Сам плагин работает как раньше. */
+.ps-warning-overlay {
+  display: none !important;
+}

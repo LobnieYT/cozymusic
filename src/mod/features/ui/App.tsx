@@ -34,7 +34,7 @@ import donateLogo from "@ui/assets/donate-logo.png?inline";
 import discordBg from "@ui/assets/discord-bg.png?inline";
 
 import { FaDiscord, FaGithub } from "react-icons/fa";
-import { Power, Download, Volume2, Heart, MicVocal, Palette, Type, Scaling, Gamepad2, Settings as SettingsIcon, Wrench, FlaskConical, Puzzle, RefreshCw } from "lucide-react";
+import { Power, Download, Volume2, Heart, MicVocal, Palette, Type, Scaling, Gamepad2, Settings as SettingsIcon, Wrench, FlaskConical, Puzzle, RefreshCw, AlertTriangle } from "lucide-react";
 
 const IS_DEV = false;
 const DISCORD_INVITE_URL = "https://discord.gg/mS5WJfWEht";
@@ -100,6 +100,7 @@ export default function App() {
   const [checkingUpdate, setCheckingUpdate] = useState(false);
   const [isFlatpakEnv, setIsFlatpakEnv] = useState(false);
   const [isWinEnv, setIsWinEnv] = useState(false);
+  const [devOnlyAck, setDevOnlyAck] = useState(false);
 
   async function queryUpdateInfo() {
     try {
@@ -422,7 +423,7 @@ export default function App() {
 
               <MenuSection title="Система">
                 <NavButton active={selected === "settings"} icon={<SettingsIcon />} label="Настройки" onClick={() => setSelected("settings")} />
-                <NavButton active={selected === "devtools"} icon={<Wrench />} label="Devtools" onClick={() => setSelected("devtools")} />
+                <NavButton active={selected === "devtools"} icon={<Wrench />} label="DevOnly" onClick={() => { setSelected("devtools"); setDevOnlyAck(false); }} />
                 {devtoolsEnabled && (
                   <NavButton active={selected === "experiments"} icon={<FlaskConical />} label="Эксперименты" onClick={() => setSelected("experiments")} />
                 )}
@@ -453,7 +454,18 @@ export default function App() {
                 {selected === "discord" && <DiscordRPC />}
 
                 {selected === "settings" && <Settings />}
-                {selected === "devtools" && <Devtools />}
+                {selected === "devtools" && !devOnlyAck && (
+                  <div className="flex h-full flex-col items-center justify-center gap-4 rounded-xl border-2 border-red-500/70 bg-red-500/10 p-6 text-center">
+                    <AlertTriangle className="h-10 w-10 text-red-400" />
+                    <span className="text-base leading-snug font-bold text-red-200">
+                      ВНИМАНИЕ! Это вкладка для разработчиков, нужна только для разработки плагинов.
+                    </span>
+                    <Button variant="destructive" onClick={() => setDevOnlyAck(true)}>
+                      Подтверждаю
+                    </Button>
+                  </div>
+                )}
+                {selected === "devtools" && devOnlyAck && <Devtools />}
                 {selected === "experiments" && devtoolsEnabled && <ExperimentsToggle />}
                 {selected === "plugins" && <PluginsDev />}
                 {/* {devtoolsEnabled && <Playground />} */}

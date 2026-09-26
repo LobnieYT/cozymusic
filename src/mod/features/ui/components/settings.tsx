@@ -15,6 +15,12 @@ import { Settings as SettingsIcon } from "lucide-react";
 import { ErrorBoundary } from "@ui/components/ui/error-boundary";
 
 import { MEDIA_BIND_ACTIONS, MEDIA_BIND_DEFAULTS, MEDIA_BINDS_ENABLED_KEY, MEDIA_BIND_KEY } from "~/mod/features/media-binds";
+import {
+  MEDIA_BIND_KEY_2,
+  MOUSE_BUTTONS,
+  formatBind,
+  isMouseBind,
+} from "~/mod/features/media-binds/mouse-binds";
 
 function keyEventToAccelerator(e: KeyboardEvent): string | null {
   e.preventDefault();
@@ -30,19 +36,33 @@ function keyEventToAccelerator(e: KeyboardEvent): string | null {
   else if (key === "Escape") key = "Esc";
   else if (key.startsWith("Arrow")) key = key.slice(5);
   else if (key.length === 1) key = key.toUpperCase();
-  // медиаклавиши (MediaPlayPause, AudioVolumeUp...) — как есть
+  // медиаклавиши (MediaPlayPause, ...) и одиночные клавиши (WASD...) — как есть
   parts.push(key);
-  if (parts.length === 1 && !/^(F\d{1,2}|Media\w+|Audio\w+|Space|Up|Down|Left|Right|Esc|Tab|Delete|Home|End|PageUp|PageDown|Insert)$/.test(key)) {
+  if (parts.length === 1 && !/^(F\d{1,2}|Media\w+|Audio\w+|Space|Up|Down|Left|Right|Esc|Tab|Delete|Home|End|PageUp|PageDown|Insert|[A-Z0-9])$/.test(key)) {
     return null;
   }
   return parts.join("+");
 }
 
+function mouseEventToBind(e: MouseEvent): string | null {
+  // ЛКМ (0) и ПКМ (2) запрещены — иначе убьём обычные клики
+  if (e.button === 0 || e.button === 2) return null;
+  const label = MOUSE_BUTTONS[e.button];
+  if (!label) return null;
+  e.preventDefault();
+  e.stopPropagation();
+  return label;
+}
+
 export function Settings() {
   const [bindsEnabled, setBindsEnabled] = useState(true);
   const [binds, setBinds] = useState<Record<string, string>>({});
-  const [recording, setRecording] = useState<string | null>(null);
+  // recording: какой слот слушаем; pending: что поймали, ждёт подтверждения
+  const [recording, setRecording] = useState<{ action: string; slot: 0 | 1 } | null>(null);
+  const [pending, setPending] = useState<{ action: string; slot: 0 | 1; value: string } | null>(null);
   const [autostart, setAutostart] = useState(false);
+
+  const slotKey = (actionId: string, slot: 0 | 1) => (slot === 0 ? MEDIA_BIND_KEY(actionId) : MEDIA_BIND_KEY_2(actionId));
 
   useEffect(() => {
     (async () => {
@@ -50,8 +70,9 @@ export function Settings() {
         setBindsEnabled((await window.yandexMusicMod.getStorageValue(MEDIA_BINDS_ENABLED_KEY)) !== false);
         const next: Record<string, string> = {};
         for (const a of MEDIA_BIND_ACTIONS) {
-          next[a.id] =
+          next[`${a.id}:0`] =
             (await window.yandexMusicMod.getStorageValue(MEDIA_BIND_KEY(a.id))) || MEDIA_BIND_DEFAULTS[a.id];
+          next[`${a.id}:1`] = (await window.yandexMusicMod.getStorageValue(MEDIA_BIND_KEY_2(a.id))) || "";
         }
         setBinds(next);
         const auto = await window.yandexMusicMod.getAutostart();
@@ -62,24 +83,53 @@ export function Settings() {
 
   useEffect(() => {
     if (!recording) return;
-    const handler = (e: KeyboardEvent) => {
+    const onKey = (e: KeyboardEvent) => {
       const acc = keyEventToAccelerator(e);
       if (!acc) return;
-      (async () => {
-        setBinds((prev) => ({ ...prev, [recording]: acc }));
-        await window.yandexMusicMod.setStorageValue(MEDIA_BIND_KEY(recording), acc);
-        await window.yandexMusicMod.refreshShortcuts().catch(() => {});
-        setRecording(null);
-      })();
+      setPending({ action: recording.action, slot: recording.slot, value: acc });
     };
-    window.addEventListener("keydown", handler, true);
-    return () => window.removeEventListener("keydown", handler, true);
+    const onMouse = (e: MouseEvent) => {
+      // ЛКМ/ПКМ не перехватываем даже при записи
+      if (e.button === 0 || e.button === 2) return;
+      const label = mouseEventToBind(e);
+      if (!label) return;
+      setPending({ action: recording.action, slot: recording.slot, value: label });
+    };
+    window.addEventListener("keydown", onKey, true);
+    window.addEventListener("mousedown", onMouse, true);
+    return () => {
+      window.removeEventListener("keydown", onKey, true);
+      window.removeEventListener("mousedown", onMouse, true);
+    };
   }, [recording]);
 
+  const confirmPending = async () => {
+    if (!pending) return;
+    const key = slotKey(pending.action, pending.slot);
+    setBinds((prev) => ({ ...prev, [`${pending.action}:${pending.slot}`]: pending.value }));
+    await window.yandexMusicMod.setStorageValue(key, pending.value);
+    await window.yandexMusicMod.refreshShortcuts().catch(() => {});
+    setPending(null);
+    setRecording(null);
+  };
+
+  const cancelPending = () => {
+    setPending(null);
+    setRecording(null);
+  };
+
+  const clearSlot = async (actionId: string, slot: 0 | 1) => {
+    const key = slotKey(actionId, slot);
+    setBinds((prev) => ({ ...prev, [`${actionId}:${slot}`]: "" }));
+    await window.yandexMusicMod.setStorageValue(key, "");
+    await window.yandexMusicMod.refreshShortcuts().catch(() => {});
+  };
+
   const resetBind = async (actionId: string) => {
-    const def = MEDIA_BIND_DEFAULTS[actionId];
-    setBinds((prev) => ({ ...prev, [actionId]: def }));
+    const def = MEDIA_BIND_DEFAULTS[actionId] || "";
+    setBinds((prev) => ({ ...prev, [`${actionId}:0`]: def, [`${actionId}:1`]: "" }));
     await window.yandexMusicMod.setStorageValue(MEDIA_BIND_KEY(actionId), def);
+    await window.yandexMusicMod.setStorageValue(MEDIA_BIND_KEY_2(actionId), "");
     await window.yandexMusicMod.refreshShortcuts().catch(() => {});
   };
   async function handleCopyAuthData() {
@@ -144,31 +194,80 @@ export function Settings() {
             </Label>
           </div>
           {MEDIA_BIND_ACTIONS.map((a) => (
-            <div key={a.id} className="flex items-center gap-2">
-              <span className="flex-1 text-sm">{a.label}</span>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 min-w-[110px] px-2 font-mono text-xs"
-                disabled={!bindsEnabled}
-                onClick={() => setRecording(recording === a.id ? null : a.id)}
-              >
-                {recording === a.id ? "Нажми клавиши…" : binds[a.id] || "—"}
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 px-2 text-xs"
-                disabled={!bindsEnabled}
-                title="Сбросить"
-                onClick={() => resetBind(a.id)}
-              >
-                ↺
-              </Button>
+            <div key={a.id} className="flex flex-col gap-1.5 rounded-lg border border-transparent p-1">
+              <div className="flex items-center gap-2">
+                <span className="flex-1 text-sm">{a.label}</span>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-7 px-2 text-xs"
+                  disabled={!bindsEnabled}
+                  title="Сбросить обе комбинации"
+                  onClick={() => resetBind(a.id)}
+                >
+                  ↺
+                </Button>
+              </div>
+              {([0, 1] as const).map((slot) => {
+                const isPending = pending?.action === a.id && pending?.slot === slot;
+                const isRecording = recording?.action === a.id && recording?.slot === slot;
+                return (
+                  <div key={slot} className="flex items-center gap-2 pl-1">
+                    <span className="text-muted-foreground w-8 shrink-0 text-xs">#{slot + 1}</span>
+                    {isPending ? (
+                      <>
+                        <span className="flex-1 truncate rounded-md border border-violet-400/60 bg-violet-500/10 px-2 py-1 font-mono text-xs">
+                          {formatBind(pending.value)}
+                        </span>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-emerald-300"
+                          title="Подтвердить"
+                          onClick={confirmPending}
+                        >
+                          ✓
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs text-red-300"
+                          title="Отменить"
+                          onClick={cancelPending}
+                        >
+                          ✗
+                        </Button>
+                      </>
+                    ) : (
+                      <>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 flex-1 truncate px-2 font-mono text-xs"
+                          disabled={!bindsEnabled}
+                          onClick={() => setRecording(isRecording ? null : { action: a.id, slot })}
+                        >
+                          {isRecording ? "Нажми клавишу/кнопку…" : formatBind(binds[`${a.id}:${slot}`])}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 px-2 text-xs"
+                          disabled={!bindsEnabled}
+                          title="Очистить слот"
+                          onClick={() => clearSlot(a.id, slot)}
+                        >
+                          ✕
+                        </Button>
+                      </>
+                    )}
+                  </div>
+                );
+              })}
             </div>
           ))}
           <span className="text-muted-foreground text-xs">
-            Нажми на бинд и нажми сочетание клавиш. Медиаклавиши поддерживаются.
+            Два слота на действие: клавиатура (включая WASD и одиночные клавиши) или кнопки мыши — средняя, X1, X2 (ЛКМ/ПКМ запрещены). Кнопки мыши работают, когда окно приложения в фокусе. Одиночные клавиши перехватываются глобально — аккуратнее с ними.
           </span>
         </div>
         <div className="flex items-center gap-3">
