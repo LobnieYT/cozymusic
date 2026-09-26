@@ -176,7 +176,7 @@ export const PLUGIN_REGISTRY: PluginMeta[] = [
     settingsName: "CensorAbuse",
     name: "CensorAbuse",
     author: "Lobnie",
-    description: "Снимает ограничения с треков полностью: плеер играет их как неудалённые.",
+    description: "Снимает ограничения с треков полностью: плеер играет их как неудалённые. Форк проекта FckCensor",
     repo: "https://github.com/LobnieYT/CensorAbuse",
     scriptUrl: raw("LobnieYT/CensorAbuse", "main", "script.js"),
     metaUrl: raw("LobnieYT/CensorAbuse", "main", "metadata.json"),
